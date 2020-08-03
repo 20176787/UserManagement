@@ -29,11 +29,13 @@ import LoginScreen from './src/page/LoginScreen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import LoginAndRegisterContainer from './src/route/LoginAndRegisterContainer';
+import HomeContainer from './src/route/HomeContainer';
 const App: () => React$Node = () => {
   const Stack = createStackNavigator();
   return (
      <NavigationContainer>
        <LoginAndRegisterContainer/>
+       {/*<HomeContainer/>*/}
      </NavigationContainer>
   );
 };
