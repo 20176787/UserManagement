@@ -4,6 +4,8 @@ import LoginScreen from '../page/LoginScreen';
 import RegisterScreen from '../page/RegisterScreen';
 import ForgotPasswordScreen from '../page/ForgotPasswordScreen';
 import HomeContainer from './HomeContainer';
+import EditInfoUserScreen from '../page/Home/EditInfoUserScreen';
+import ListUsersScreen from '../page/Home/ListUsersScreen';
 const Stack = createStackNavigator();
 export default function LoginAndRegisterContainer() {
   return (
@@ -12,6 +14,8 @@ export default function LoginAndRegisterContainer() {
       <Stack.Screen name={'Register'} component={RegisterScreen} />
       <Stack.Screen name={'ForgotPassword'} component={ForgotPasswordScreen} />
       <Stack.Screen name={'Home'} component={HomeContainer} />
+      <Stack.Screen name={'Edit'} component={EditInfoUserScreen} />
+      <Stack.Screen name={'List'} component={ListUsersScreen} />
     </Stack.Navigator>
   );
 }

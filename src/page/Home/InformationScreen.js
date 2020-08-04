@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,8 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
 } from 'react-native';
-export default function InformationScreen() {
+import APIKit from '../../shared/APIKit';
+export default function InformationScreen({route, navigation}) {
   const userData = {
     username: 'huy1407',
     email: 'huy14071999@gmail.com',
@@ -20,6 +21,14 @@ export default function InformationScreen() {
     fullName: 'Le Ngoc Huy',
     address: 'Ha Noi',
   };
+  // const {STORAGE_KEY} = route.params;
+  useEffect(() => {
+    if (route.params != null) {
+      console.log(route.params.hello);
+    }
+    console.log(route.params.hello);
+  }, [route.params]);
+
   const drawLine = () => {
     return (
       <View
@@ -36,17 +45,38 @@ export default function InformationScreen() {
     <SafeAreaView>
       <ScrollView>
         <View style={styles.container}>
-          <Pressable style={{padding: 10}}>
-            <Text style={{fontSize: 20, color: 'red', fontWeight: 'bold'}}>
-              Edit
-            </Text>
-          </Pressable>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <Pressable
+              style={{padding: 10}}
+              onPress={() => {
+                // APIKit.get('/api/auth/logout', function (req, res) {
+                //   req.logout();
+                //   res.redirect('/');
+                // })
+                //   .then((res) => {
+                //     console.log(res.data);
+                //   })
+                //   .catch((error) => console.log(error));
+
+              }}>
+              <Text style={{fontSize: 20, color: 'red', fontWeight: 'bold'}}>
+                Logout
+              </Text>
+            </Pressable>
+            <Pressable style={{padding: 10}}>
+              <Text style={{fontSize: 20, color: 'red', fontWeight: 'bold'}}>
+                Edit
+              </Text>
+            </Pressable>
+          </View>
           <View style={{alignItems: 'center'}}>
             <Image
               style={styles.imageAvatar}
               source={require('../../store/img/logo.png')}
             />
-            <Text style={{fontSize: 20, fontWeight: 'bold'}}>{userData.username}</Text>
+            <Text style={{fontSize: 20, fontWeight: 'bold'}}>
+              {userData.username}
+            </Text>
             <Text style={{paddingTop: 5, color: '#3e3d3d'}}>
               GOOD PARTNER, GREAT SUCCESS
             </Text>

@@ -11,13 +11,26 @@ import {
   KeyboardAvoidingView,
   TextInput,
 } from 'react-native';
+import APIKit from '../shared/APIKit';
 const {width, height} = Dimensions.get('window');
 export default function RegisterScreen({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
-  const onSignUp = () => {};
+  const onSignUp = async () => {
+    await APIKit.post('/api/auth/signup/', {
+      name: username,
+      email: email,
+      password: password,
+      password_confirmation: confirmPassword,
+    })
+      .then((res) => {
+        console.log(res);
+        navigation.navigate('ForgotPassword',{accessToken:123});
+      })
+      .catch((error) => console.log(error));
+  };
   return (
     <SafeAreaView>
       <ImageBackground
@@ -32,14 +45,14 @@ export default function RegisterScreen({navigation}) {
               source={require('../store/img/logo.png')}
             />
             {/*<Text style={styles.logo}>Register</Text>*/}
-              <View style={styles.inputView}>
-                  <TextInput
-                      placeholder="Username...."
-                      placeholderTextColor={'#abae94'}
-                      style={styles.inputText}
-                      onChangeText={(text) => setUsername(text)}
-                  />
-              </View>
+            <View style={styles.inputView}>
+              <TextInput
+                placeholder="Username...."
+                placeholderTextColor={'#abae94'}
+                style={styles.inputText}
+                onChangeText={(text) => setUsername(text)}
+              />
+            </View>
             <View style={styles.inputView}>
               <TextInput
                 placeholder="email...."
@@ -67,12 +80,19 @@ export default function RegisterScreen({navigation}) {
             <Pressable style={styles.loginButton} onPress={() => onSignUp()}>
               <Text style={styles.loginText}>REGISTER</Text>
             </Pressable>
-              <Pressable style={styles.forgot} onPress={()=>navigation.navigate('Login')}>
-                  <Text style={styles.forgot}>
-                      already has an account?
-                      {<Text style={{fontWeight: 'bold', fontSize: 14}}> Login </Text>}
+            <Pressable
+              style={styles.forgot}
+              onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.forgot}>
+                already has an account?
+                {
+                  <Text style={{fontWeight: 'bold', fontSize: 14}}>
+                    {' '}
+                    Login{' '}
                   </Text>
-              </Pressable>
+                }
+              </Text>
+            </Pressable>
           </View>
         </KeyboardAvoidingView>
       </ImageBackground>
@@ -113,7 +133,7 @@ const styles = StyleSheet.create({
   forgot: {
     color: 'white',
     fontSize: 11,
-      paddingTop:20
+    paddingTop: 20,
   },
   loginButton: {
     width: '80%',

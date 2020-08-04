@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -14,32 +14,52 @@ import {
   Alert,
 } from 'react-native';
 import ForgotPasswordScreen from './ForgotPasswordScreen';
+import APIKit, {setClientToken} from '../shared/APIKit';
+import {and} from 'react-native-reanimated';
+
 const {width, height} = Dimensions.get('window');
 export default function LoginScreen({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const onSignIn = () => {
-    console.log(email, password);
-    fetch('http://localhost:3001/users', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        username: email,
-        password: password,
-      }),
-    })
-      .then((response) => response.json())
-      .then((responseData) => {
-        // this._onValueChange(STORAGE_KEY, responseData.id_token),
-        Alert.alert(
-          'Signup Success!',
-          'Click the button to get a Chuck Norris quote!',
-        );
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [accessToken, setAccessToken] = useState('1234');
+  const [errors, setErrors] = useState({});
+  const [data, setData] = useState({});
+  const payload = {
+    email: email,
+    password: password,
+  };
+  const onSuccess = ({data}) => {
+    // Set JSON Web Token on success
+    setAccessToken(data.access_token);
+    setClientToken(data.access_token);
+    console.log('123', data.access_token);
+    setIsLoading(false);
+    setIsAuthorized(true);
+    getDataUser('Bearer ' + data.access_token);
+    navigation.navigate('ForgotPassword', {
+      accessToken: accessToken,
+    });
+  };
+  const getDataUser = ({token}) => {
+    APIKit.get('/api/auth/user', token)
+      .then((res) => {
+        console.log('hello world', res.data);
+        setData(res.data);
       })
-      .done();
+      .catch((error) => console.log(error));
+  };
+  const onFailure = (error) => {
+    console.log(error && error.response);
+    setErrors(error.response.data);
+    setIsLoading(false);
+  };
+  const onSignIn = async () => {
+    setIsLoading(true);
+    await APIKit.post('/api/auth/login/', payload)
+      .then(onSuccess)
+      .catch(onFailure);
   };
   return (
     <SafeAreaView>
@@ -65,6 +85,8 @@ export default function LoginScreen({navigation}) {
             </View>
             <View style={styles.inputView}>
               <TextInput
+                secureTextEntry
+                keyboardType="default"
                 placeholder="Your password...."
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
