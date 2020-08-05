@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,27 @@ import {
   SafeAreaView,
   StyleSheet,
   KeyboardAvoidingView,
+  AsyncStorage,
 } from 'react-native';
 import APIKit from '../../shared/APIKit';
+import RNFetchBlob from 'rn-fetch-blob';
 export default function InformationScreen({route, navigation}) {
+  const [user, setUser] = useState();
+  useEffect(() => {
+    AsyncStorage.getItem('AuthUser').then((str) => {
+      if (!str) {
+        setUser(null);
+      }
+      try {
+        setUser(JSON.parse(str));
+      } catch (error) {
+        // AsyncStorage.removeItem('AuthUser');
+        // throw error;
+        console.log(error);
+      }
+    });
+  }, [user]);
+
   const userData = {
     username: 'huy1407',
     email: 'huy14071999@gmail.com',
@@ -22,12 +40,6 @@ export default function InformationScreen({route, navigation}) {
     address: 'Ha Noi',
   };
   // const {STORAGE_KEY} = route.params;
-  useEffect(() => {
-    if (route.params != null) {
-      console.log(route.params.hello);
-    }
-    console.log(route.params.hello);
-  }, [route.params]);
 
   const drawLine = () => {
     return (
@@ -49,15 +61,20 @@ export default function InformationScreen({route, navigation}) {
             <Pressable
               style={{padding: 10}}
               onPress={() => {
-                // APIKit.get('/api/auth/logout', function (req, res) {
-                //   req.logout();
-                //   res.redirect('/');
-                // })
-                //   .then((res) => {
-                //     console.log(res.data);
-                //   })
-                //   .catch((error) => console.log(error));
-
+                RNFetchBlob.fetch(
+                  'GET',
+                  'http://488012c666f2.ngrok.io/api/auth/logout/',
+                  {
+                    Authorization: user.access_token,
+                  },
+                )
+                  .then(() => {
+                    AsyncStorage.removeItem('AuthUser');
+                    navigation.navigate('Login');
+                  })
+                  .catch((errorMessage, statusCode) => {
+                    // error handling
+                  });
               }}>
               <Text style={{fontSize: 20, color: 'red', fontWeight: 'bold'}}>
                 Logout
