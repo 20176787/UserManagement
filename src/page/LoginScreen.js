@@ -13,20 +13,14 @@ import {
   Image,
   Alert,
 } from 'react-native';
-import ForgotPasswordScreen from './ForgotPasswordScreen';
-import APIKit, {setClientToken} from '../shared/APIKit';
-import {and} from 'react-native-reanimated';
 import {setAuthUser} from '../shared/OnValueChange';
 import RNFetchBlob from 'rn-fetch-blob';
 const {width, height} = Dimensions.get('window');
 export default function LoginScreen({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [accessToken, setAccessToken] = useState('1234');
   const [errors, setErrors] = useState({});
-  const [data, setData] = useState({});
   const payload = {
     email: email,
     password: password,
@@ -34,19 +28,9 @@ export default function LoginScreen({navigation}) {
   const onSuccess = ({data}) => {
     let access_token = JSON.parse(data).access_token;
     setAuthUser({access_token, email, password});
-    navigation.navigate('Home');
-    // getDataUser('Bearer ' + data.access_token);
-    // navigation.navigate('ForgotPassword', {
-    //   accessToken: accessToken,
-    // });
-  };
-  const getDataUser = ({token}) => {
-    APIKit.get('/api/auth/user', token)
-      .then((res) => {
-        console.log('hello world', res.data);
-        setData(res.data);
-      })
-      .catch((error) => console.log(error));
+    if (access_token != undefined) {
+      navigation.navigate('Home');
+    }
   };
   const onFailure = (error) => {
     console.log(error && error.response);
@@ -56,7 +40,7 @@ export default function LoginScreen({navigation}) {
   const onSignIn = async () => {
     await RNFetchBlob.fetch(
       'POST',
-      'http://488012c666f2.ngrok.io/api/auth/login/',
+      'http://9d5fa4910b26.ngrok.io/api/auth/login/',
       {'Content-Type': 'application/json'},
       JSON.stringify(payload),
     )
