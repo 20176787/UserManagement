@@ -27,7 +27,7 @@ export default function RegisterScreen({navigation}) {
     })
       .then((res) => {
         console.log(res);
-        navigation.navigate('ForgotPassword',{accessToken:123});
+        navigation.navigate('ForgotPassword', {accessToken: 123});
       })
       .catch((error) => console.log(error));
   };

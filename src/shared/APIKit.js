@@ -1,7 +1,7 @@
 import axios from 'axios';
 // Create axios client, pre-configured with baseURL
 let APIKit = axios.create({
-  baseURL: 'http://b1230e699df4.ngrok.io',
+  baseURL: 'http://488012c666f2.ngrok.io/api/auth',
   timeout: 10000,
 });
 
@@ -12,5 +12,4 @@ export const setClientToken = (token) => {
     return config;
   });
 };
-
 export default APIKit;

@@ -1,11 +1,7 @@
 import React from 'react';
 import {AsyncStorage} from 'react-native';
-
-const onValueChange = async (item, selectedValue) => {
-  try {
-    await AsyncStorage.setItem(item, selectedValue);
-  } catch (error) {
-    console.log('AsyncStorage error: ' + error.message);
-  }
+export const setAuthUser = ({access_token, email, password}) => {
+  const User = {access_token, email, password};
+  console.log('User', User);
+  return AsyncStorage.setItem('AuthUser', JSON.stringify(User));
 };
-export default onValueChange;
