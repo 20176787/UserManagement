@@ -7,7 +7,6 @@ const Tab = createBottomTabNavigator();
 export default function HomeContainer() {
   return (
     <Tab.Navigator
-      headerMode={'none'}
       initialRouteName="Home"
       tabBar={(props) => <BottomTabBarCustom {...props} />}>
       <Tab.Screen name={'Information'} component={InformationScreen} />

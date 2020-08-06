@@ -11,24 +11,33 @@ import {
   KeyboardAvoidingView,
   TextInput,
 } from 'react-native';
-import APIKit from '../shared/APIKit';
+import RNFetchBlob from 'rn-fetch-blob';
+import {setAuthUser} from '../shared/OnValueChange';
 const {width, height} = Dimensions.get('window');
 export default function RegisterScreen({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
+  const useData = {
+    name: username,
+    email: email,
+    password: password,
+    password_confirmation: confirmPassword,
+  };
+  const onSuccess = ({data}) => {
+    let access_token = JSON.parse(data).access_token;
+    setAuthUser({access_token, email, password});
+    navigation.navigate('Home');
+  };
   const onSignUp = async () => {
-    await APIKit.post('/api/auth/signup/', {
-      name: username,
-      email: email,
-      password: password,
-      password_confirmation: confirmPassword,
-    })
-      .then((res) => {
-        console.log(res);
-        navigation.navigate('ForgotPassword', {accessToken: 123});
-      })
+    await RNFetchBlob.fetch(
+      'POST',
+      'http://9d5fa4910b26.ngrok.io/api/auth/signup/',
+      {'Content-Type': 'application/json'},
+      JSON.stringify(useData),
+    )
+      .then(onSuccess)
       .catch((error) => console.log(error));
   };
   return (
@@ -63,6 +72,7 @@ export default function RegisterScreen({navigation}) {
             </View>
             <View style={styles.inputView}>
               <TextInput
+                secureTextEntry
                 placeholder="password...."
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
@@ -71,6 +81,7 @@ export default function RegisterScreen({navigation}) {
             </View>
             <View style={styles.inputView}>
               <TextInput
+                secureTextEntry
                 placeholder="Confirm password...."
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}

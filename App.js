@@ -7,11 +7,13 @@
  */
 
 import React, {useState} from 'react';
-import {AsyncStorage} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import 'react-native-gesture-handler';
 import {NavigationContainer} from '@react-navigation/native';
 import LoginAndRegisterContainer from './src/route/LoginAndRegisterContainer';
 import HomeContainer from './src/route/HomeContainer';
+import EditInfoUserScreen from "./src/page/Home/EditInfoUserScreen";
+import ForgotPasswordScreen from "./src/page/ForgotPasswordScreen";
 const App: () => React$Node = () => {
   const [user, setUser] = useState();
   AsyncStorage.getItem('AuthUser')
@@ -42,6 +44,7 @@ const App: () => React$Node = () => {
       <NavigationContainer>
         <HomeContainer />
       </NavigationContainer>
+      //   <EditInfoUserScreen/>
     );
   }
 };
