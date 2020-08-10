@@ -42,7 +42,7 @@ export default function InformationScreen({navigation}) {
         setUser(JSON.parse(str));
         RNFetchBlob.fetch(
           'GET',
-          'http://9d5fa4910b26.ngrok.io/api/auth/user/',
+          'http://8d2cddcc486b.ngrok.io/api/auth/user/',
           {
             'Content-Type': 'application/json',
             Authorization: 'Bearer ' + JSON.parse(str).access_token,
@@ -72,7 +72,7 @@ export default function InformationScreen({navigation}) {
     );
   };
   return (
-    <SafeAreaView style={{height:'100%'}}>
+    <SafeAreaView style={{height: '100%'}}>
       <View
         style={{
           flexDirection: 'row',
@@ -97,16 +97,16 @@ export default function InformationScreen({navigation}) {
           />
         </Pressable>
       </View>
-        <View style={{alignItems: 'center'}}>
-            <Image
-                style={styles.imageAvatar}
-                source={require('../../store/img/logo.png')}
-            />
-            <Text style={{fontSize: 20, fontWeight: 'bold'}}>{data.name}</Text>
-            <Text style={{paddingTop: 5, color: '#3e3d3d'}}>
-                GOOD PARTNER, GREAT SUCCESS
-            </Text>
-        </View>
+      <View style={{alignItems: 'center'}}>
+        <Image
+          style={styles.imageAvatar}
+          source={require('../../store/img/logo.png')}
+        />
+        <Text style={{fontSize: 20, fontWeight: 'bold'}}>{data.name}</Text>
+        <Text style={{paddingTop: 5, color: '#3e3d3d'}}>
+          GOOD PARTNER, GREAT SUCCESS
+        </Text>
+      </View>
       <ScrollView
         contentContainerStyle={styles.scrollView}
         refreshControl={
@@ -178,7 +178,7 @@ export default function InformationScreen({navigation}) {
                 margin: 20,
               }}>
               <Text>Phone Number</Text>
-              <Text>{data.phoneNumber}</Text>
+              <Text>{data.phone}</Text>
             </View>
             {drawLine()}
             <View
@@ -206,7 +206,6 @@ export default function InformationScreen({navigation}) {
               navigation.navigate('EditUser', {
                 data: data,
                 user: user,
-                isLoading: isLoading,
               })
             }
             style={{
@@ -254,7 +253,7 @@ export default function InformationScreen({navigation}) {
               padding: 10,
               marginBottom: 30,
             }}
-          onPress={()=>navigation.navigate('ChangePassword')}>
+            onPress={() => navigation.navigate('ChangePassword', {user: user})}>
             <Text style={{color: '#fff', fontWeight: 'bold'}}>
               Change Password
             </Text>

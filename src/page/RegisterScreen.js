@@ -15,29 +15,30 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {setAuthUser} from '../shared/OnValueChange';
 const {width, height} = Dimensions.get('window');
 export default function RegisterScreen({navigation}) {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
   const useData = {
     name: username,
-    email: email,
+    phone: phone,
     password: password,
     password_confirmation: confirmPassword,
-  };
-  const onSuccess = ({data}) => {
-    let access_token = JSON.parse(data).access_token;
-    setAuthUser({access_token, email, password});
-    navigation.navigate('Home');
   };
   const onSignUp = async () => {
     await RNFetchBlob.fetch(
       'POST',
-      'http://9d5fa4910b26.ngrok.io/api/auth/signup/',
+      'http://8d2cddcc486b.ngrok.io/api/auth/signup/',
       {'Content-Type': 'application/json'},
       JSON.stringify(useData),
     )
-      .then(onSuccess)
+      .then((res) => {
+        let access_token = JSON.parse(res.text()).access_token;
+        setAuthUser({access_token, phone, password});
+        if (access_token != undefined) {
+          navigation.navigate('Home');
+        }
+      })
       .catch((error) => console.log(error));
   };
   return (
@@ -64,10 +65,10 @@ export default function RegisterScreen({navigation}) {
             </View>
             <View style={styles.inputView}>
               <TextInput
-                placeholder="email...."
+                placeholder="phone...."
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
-                onChangeText={(text) => setEmail(text)}
+                onChangeText={(text) => setPhone(text)}
               />
             </View>
             <View style={styles.inputView}>

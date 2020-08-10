@@ -16,17 +16,18 @@ export default function EditInfoUserScreen({navigation, route}) {
   const [name, setName] = useState();
   const [address, setAddress] = useState();
   const [birth, setBirth] = useState();
-  const [phoneNumber, setPhoneNumber] = useState();
+  const [email, setEmail] = useState();
   const useData = {
     name,
     address,
     birth,
-    phoneNumber,
+    email,
   };
   const onUpdate = async () => {
+    console.log('update', useData);
     await RNFetchBlob.fetch(
       'PUT',
-      `http://9d5fa4910b26.ngrok.io/api/auth/update/${data.id}`,
+      `http://00760bf79d39.ngrok.io/api/auth/update/${data.id}`,
       {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + user.access_token,
@@ -41,7 +42,9 @@ export default function EditInfoUserScreen({navigation, route}) {
   };
   return (
     <SafeAreaView>
-      <KeyboardAvoidingView>
+      <KeyboardAvoidingView
+        style={{justifyContent: 'center', height: '95%'}}
+        behavior="padding">
         <View style={{padding: 10}}>
           <Text
             style={{
@@ -68,9 +71,9 @@ export default function EditInfoUserScreen({navigation, route}) {
             />
           </View>
           <View>
-            <Text>Email</Text>
+            <Text>PhoneNumber</Text>
             <Text style={{paddingTop: 10, paddingBottom: 10, color: '#abae94'}}>
-              {data.email}
+              {data.phone}
             </Text>
           </View>
           <View>
@@ -94,12 +97,12 @@ export default function EditInfoUserScreen({navigation, route}) {
             />
           </View>
           <View>
-            <Text>PhoneNumber</Text>
+            <Text>Email</Text>
             <TextInput
-              placeholder="phoneNumber"
+              placeholder="email"
               placeholderTextColor={'#abae94'}
-              defaultValue={data.phoneNumber}
-              onChangeText={(text) => setPhoneNumber(text)}
+              defaultValue={data.email}
+              onChangeText={(text) => setEmail(text)}
               style={styles.input}
             />
           </View>

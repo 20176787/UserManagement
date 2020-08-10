@@ -17,35 +17,32 @@ import {setAuthUser} from '../shared/OnValueChange';
 import RNFetchBlob from 'rn-fetch-blob';
 const {width, height} = Dimensions.get('window');
 export default function LoginScreen({navigation}) {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const payload = {
-    email: email,
+    phone: phone,
     password: password,
-  };
-  const onSuccess = ({data}) => {
-    let access_token = JSON.parse(data).access_token;
-    setAuthUser({access_token, email, password});
-    if (access_token != undefined) {
-      navigation.navigate('Home');
-    }
-  };
-  const onFailure = (error) => {
-    console.log(error && error.response);
-    setErrors(error.response.data);
-    setIsLoading(false);
   };
   const onSignIn = async () => {
     await RNFetchBlob.fetch(
       'POST',
-      'http://9d5fa4910b26.ngrok.io/api/auth/login/',
+      'http://8d2cddcc486b.ngrok.io/api/auth/login/',
       {'Content-Type': 'application/json'},
       JSON.stringify(payload),
     )
-      .then(onSuccess)
-      .catch(onFailure);
+      .then((res) => {
+        console.log(JSON.parse(res.text()).message);
+        let access_token = JSON.parse(res.text()).access_token;
+        setAuthUser({access_token, phone, password});
+        if (access_token != undefined) {
+          navigation.navigate('Home');
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
   return (
     <SafeAreaView>
@@ -66,7 +63,7 @@ export default function LoginScreen({navigation}) {
                 placeholder="Your email...."
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
-                onChangeText={(text) => setEmail(text)}
+                onChangeText={(text) => setPhone(text)}
               />
             </View>
             <View style={styles.inputView}>
