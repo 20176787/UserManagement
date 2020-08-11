@@ -10,7 +10,8 @@ import {
   StyleSheet,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-export default function ChangePasswordScreen({route,navigation}) {
+import HeaderTab from '../HeaderTab';
+export default function ChangePasswordScreen({route, navigation}) {
   const [oldPassword, setOldPassword] = useState();
   const [newPassword, setNewPassword] = useState();
   const [confirmNewPassword, setConfirmNewPassword] = useState();
@@ -19,12 +20,12 @@ export default function ChangePasswordScreen({route,navigation}) {
     new_password: newPassword,
     new_password_confirmation: confirmNewPassword,
   };
-    const {user} = route.params;
+  const {user} = route.params;
   const onUpdate = async () => {
     console.log('update', data_password_change);
     await RNFetchBlob.fetch(
       'POST',
-      `http://8d2cddcc486b.ngrok.io/api/auth/change_password`,
+      'http://35f5c59e544b.ngrok.io/api/auth/change_password',
       {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + user.access_token,
@@ -39,10 +40,15 @@ export default function ChangePasswordScreen({route,navigation}) {
   };
   return (
     <SafeAreaView>
+      <HeaderTab navigation={navigation} />
       <KeyboardAvoidingView
-        style={{justifyContent: 'center', height: '95%'}}
+        style={{justifyContent: 'center', height: '80%'}}
         behavior="padding">
         <View style={{padding: 10}}>
+          <Image
+            style={styles.imageAvatar}
+            source={require('../../store/img/logo.png')}
+          />
           <Text
             style={{
               fontSize: 20,
@@ -53,10 +59,6 @@ export default function ChangePasswordScreen({route,navigation}) {
             }}>
             Change Password
           </Text>
-          <Image
-            style={styles.imageAvatar}
-            source={require('../../store/img/logo.png')}
-          />
           <View>
             <Text>Old Password</Text>
             <TextInput

@@ -10,16 +10,16 @@ import {
   SafeAreaView,
   StyleSheet,
   FlatList,
+  Alert,
 } from 'react-native';
 const {width, height} = Dimensions.get('window');
 import AsyncStorage from '@react-native-community/async-storage';
-import {List, ListItem} from 'react-native-elements';
-import ImagePicker from 'react-native-image-crop-picker';
 import RNFetchBlob from 'rn-fetch-blob';
-import moment from 'moment';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import HeaderTab from '../HeaderTab';
+import ImagePicker from 'react-native-image-crop-picker/index';
 export default function ImageScreen({navigation}) {
   const [user, setUser] = useState();
-  const [isRun, setIsRun] = useState(false);
   const [dataImg, setDataImg] = useReducer((dataImg, {type, value}) => {
     switch (type) {
       case 'add':
@@ -30,137 +30,93 @@ export default function ImageScreen({navigation}) {
         return dataImg;
     }
   }, []);
-  const [data, setData] = useReducer((data, {type, value}) => {
-    switch (type) {
-      case 'add':
-        return [...data, value];
-      case 'remove':
-        return data.filter((_, index) => index !== value);
-      default:
-        return data;
-    }
-  }, []);
-  const [imgs, setImgs] = useReducer(
-    (imgs, {type, value}) => {
-      switch (type) {
-        case 'add':
-          return [...imgs, value];
-        case 'remove':
-          return imgs.filter((index) => index !== value);
-        default:
-          return imgs;
-      }
-    },
-    [isRun],
-  );
+  const createTwoButtonAlert = ({item}) =>
+    Alert.alert(
+      'Warring ',
+      'Do you want to delete this images?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => deleteImage({item})},
+      ],
+      {cancelable: false},
+    );
   useEffect(() => {
-    setIsRun(false);
-    AsyncStorage.getItem('AuthUser').then((str) => {
-      if (!str) {
-        setUser(null);
-      }
-      try {
-        dataImg.map((i) => setDataImg({type: 'remove', value: i}));
-        setUser(JSON.parse(str));
-        RNFetchBlob.fetch(
-          'GET',
-          'http://8d2cddcc486b.ngrok.io/api/auth/image/',
-          {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + JSON.parse(str).access_token,
-          },
-        )
-          .then((res) => {
-            JSON.parse(res.data).map((i) =>
-              setDataImg({
-                type: 'add',
-                value: {
-                  uri: i.image_path,
-                  width: width / 4,
-                  height: width / 4,
-                  mime: i.mime,
-                },
-              }),
-            );
-          })
-          .catch((error) => console.log(error));
-      } catch (error) {
-        AsyncStorage.removeItem('AuthUser');
-        throw error;
-      }
-    });
-  }, [isRun]);
-  const onUploadImage = async () => {
-    console.log('data', data);
-    await RNFetchBlob.fetch(
-      'POST',
-      'http://8d2cddcc486b.ngrok.io/api/auth/fileUpload',
-      {
-        'Content-Type': 'multipart/form-data',
-        Authorization: 'Bearer ' + user.access_token,
-      },
-      data,
-    )
-      .uploadProgress((written, total) => {
-        console.log('uploaded', written / total);
-      })
-      .then((res) => {
-        // console.log('success upLoad');
-        cleanupImages();
-        imgs.map((i) =>
-          setImgs({
-            type: 'remove',
-            value: i,
-          }),
-        );
-        setIsRun(true);
-        // navigation.navigate('Home');
-      })
-      .catch((error) => console.log(error));
-  };
-  const cleanupImages = () => {
-    ImagePicker.clean()
-      .then(() => {
-        // console.log('removed tmp images from tmp directory');
-        alert('Temporary images history cleared');
-      })
-      .catch((e) => {
-        alert(e);
+    const getData = () => {
+      AsyncStorage.getItem('AuthUser').then((str) => {
+        if (!str) {
+          setUser(null);
+        }
+        try {
+          setUser(JSON.parse(str));
+          RNFetchBlob.fetch(
+            'GET',
+            'http://35f5c59e544b.ngrok.io/api/auth/image/',
+            {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + JSON.parse(str).access_token,
+            },
+          )
+            .then((res) => {
+                console.log("res",res.data);
+                console.log("asdasdasd",dataImg);
+              JSON.parse(res.data).map((i) =>
+                setDataImg({
+                  type: 'add',
+                  value: {
+                    uri: i.image_path,
+                    width: width / 2 - 10,
+                    height: width / 2 - 10,
+                    mime: i.mime,
+                    id: i.id,
+                  },
+                }),
+              );
+            })
+            .catch((error) => console.log(error));
+        } catch (error) {
+          AsyncStorage.removeItem('AuthUser');
+          throw error;
+        }
       });
-  };
-  const pickImage = () => {
-    console.log(moment().utcOffset('+07:00'));
-    ImagePicker.openPicker({
-      multiple: true,
-    })
-      .then((images) => {
-        images.map((i, key) => {
-          console.log(i);
-          setImgs({
-            type: 'add',
-            value: {
-              uri: i.path,
-              width: width / 4,
-              height: width / 4,
-              mime: i.mime,
-            },
-          });
-          setData({
-            type: 'add',
-            value: {
-              name: `${moment().utcOffset('+07:00')}`,
-              filename: `${moment().utcOffset('+07:00')}.jpg`,
-              data: RNFetchBlob.wrap(i.path),
-            },
-          });
-        });
-      })
-      .catch((e) => alert(e));
+    };
+    navigation.addListener('focus', () => {
+      dataImg.map((i) => deleteImage(i));
+      console.log("hello",dataImg)
+       getData();
+    });
+  }, []);
+  const deleteImage = ({item}) => {
+    setDataImg({
+      type: 'remove',
+      value: item,
+    });
+    try {
+      RNFetchBlob.fetch(
+        'GET',
+        `http://35f5c59e544b.ngrok.io/api/auth/deleteImage/${item.id}`,
+        {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + user.access_token,
+        },
+      )
+        .then((res) => {
+          console.log(res.data);
+        })
+        .catch((error) => console.log(error));
+    } catch (error) {
+      AsyncStorage.removeItem('AuthUser');
+      throw error;
+    }
   };
   return (
     <SafeAreaView>
       <View>
-        <View style={{alignItems: 'center'}}>
+        <HeaderTab navigation={navigation} />
+        <View style={{alignItems: 'center', paddingTop: 20}}>
           <Image
             style={styles.imageAvatar}
             source={require('../../store/img/logo.png')}
@@ -170,25 +126,40 @@ export default function ImageScreen({navigation}) {
             GOOD PARTNER, GREAT SUCCESS
           </Text>
         </View>
-        <Pressable onPress={() => pickImage()}>
-          <Text>Pick IMAGE</Text>
-        </Pressable>
       </View>
+
+      <Pressable
+        style={{
+          alignItems: 'center',
+          backgroundColor: 'red',
+          padding: 10,
+          margin: 10,
+          marginTop: 30,
+          borderRadius: 5,
+        }}
+        onPress={() => navigation.navigate('UploadImage', {user: user})}>
+        <Text style={{fontWeight: 'bold', fontSize: 20, color: '#fff'}}>
+          Add IMAGES
+        </Text>
+      </Pressable>
       <View>
         <FlatList
+          style={{height: '56%', margin: 10}}
           data={dataImg}
-          numColumns={4}
+          numColumns={2}
           renderItem={({item}) => (
-            <View>
+            <View style={{margin: 1}}>
               <Image source={item} />
+              <Pressable
+                style={{position: 'absolute'}}
+                onPress={() => createTwoButtonAlert({item})}>
+                <Icon name="cancel" size={30} color="black" marginTop={5} />
+              </Pressable>
             </View>
           )}
           keyExtractor={(item, key) => key}
         />
       </View>
-      <Pressable onPress={onUploadImage}>
-        <Text>Upload Image</Text>
-      </Pressable>
     </SafeAreaView>
   );
 }

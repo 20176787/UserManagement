@@ -15,8 +15,11 @@ import {
 } from 'react-native';
 import {setAuthUser} from '../shared/OnValueChange';
 import RNFetchBlob from 'rn-fetch-blob';
+import {AuthContext} from '../../App';
+
 const {width, height} = Dimensions.get('window');
 export default function LoginScreen({navigation}) {
+  const {signIn} = React.useContext(AuthContext);
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +31,7 @@ export default function LoginScreen({navigation}) {
   const onSignIn = async () => {
     await RNFetchBlob.fetch(
       'POST',
-      'http://8d2cddcc486b.ngrok.io/api/auth/login/',
+      'http://35f5c59e544b.ngrok.io/api/auth/login/',
       {'Content-Type': 'application/json'},
       JSON.stringify(payload),
     )
@@ -37,7 +40,7 @@ export default function LoginScreen({navigation}) {
         let access_token = JSON.parse(res.text()).access_token;
         setAuthUser({access_token, phone, password});
         if (access_token != undefined) {
-          navigation.navigate('Home');
+          signIn({phone, password});
         }
       })
       .catch((err) => {

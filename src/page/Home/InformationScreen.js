@@ -17,6 +17,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Entypo';
 import Modal from 'react-native-modal';
+import {DrawerActions} from '@react-navigation/native';
+import {NavigationEvents} from 'react-navigation';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -34,31 +36,35 @@ export default function InformationScreen({navigation}) {
     wait(2000).then(() => setRefreshing(false));
   }, []);
   useEffect(() => {
-    AsyncStorage.getItem('AuthUser').then((str) => {
-      if (!str) {
-        setUser(null);
-      }
-      try {
-        setUser(JSON.parse(str));
-        RNFetchBlob.fetch(
-          'GET',
-          'http://8d2cddcc486b.ngrok.io/api/auth/user/',
-          {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + JSON.parse(str).access_token,
-          },
-        )
-          .then((res) => {
-            console.log('hello world', res.data);
-            setData(JSON.parse(res.data));
-          })
-          .catch((error) => console.log(error));
-      } catch (error) {
-        AsyncStorage.removeItem('AuthUser');
-        throw error;
-      }
-    });
-  }, [refreshing]);
+    const getData = () => {
+      AsyncStorage.getItem('AuthUser').then((str) => {
+        if (!str) {
+          setUser(null);
+        }
+        try {
+          setUser(JSON.parse(str));
+          RNFetchBlob.fetch(
+            'GET',
+            'http://35f5c59e544b.ngrok.io/api/auth/user/',
+            {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + JSON.parse(str).access_token,
+            },
+          )
+            .then((res) => {
+              console.log('hello world', res.data);
+              setData(JSON.parse(res.data));
+            })
+            .catch((error) => console.log(error));
+        } catch (error) {
+          AsyncStorage.removeItem('AuthUser');
+          throw error;
+        }
+      });
+    };
+    getData();
+    navigation.addListener('focus', () => getData());
+  }, []);
   const drawLine = () => {
     return (
       <View
@@ -81,8 +87,12 @@ export default function InformationScreen({navigation}) {
           justifyContent: 'space-between',
           backgroundColor: 'red',
         }}>
-        <Pressable style={{margin: 5}} onPress={() => {}}>
-          <Icon name="home" size={30} color="#fff" marginTop={5} />
+        <Pressable
+          style={{margin: 5}}
+          onPress={() => {
+            navigation.dispatch(DrawerActions.openDrawer());
+          }}>
+          <Icon name="home" size={35} color="#fff" marginTop={5} />
         </Pressable>
         <Pressable
           style={{margin: 5}}
@@ -215,47 +225,7 @@ export default function InformationScreen({navigation}) {
               padding: 10,
             }}>
             <Text style={{color: '#fff', fontWeight: 'bold'}}>
-              Update Profile
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              RNFetchBlob.fetch(
-                'GET',
-                'http://2299aa78b423.ngrok.io/api/auth/logout/',
-                {
-                  Authorization: user.access_token,
-                },
-              )
-                .then(() => {
-                  console.log('logout success');
-                  AsyncStorage.removeItem('AuthUser');
-                  navigation.navigate('Login');
-                })
-                .catch((errorMessage, statusCode) => {
-                  console.log(errorMessage, statusCode);
-                });
-            }}
-            style={{
-              backgroundColor: 'red',
-              alignSelf: 'center',
-              borderRadius: 15,
-              padding: 10,
-              margin: 10,
-            }}>
-            <Text style={{color: '#fff', fontWeight: 'bold'}}>LOGOUT</Text>
-          </Pressable>
-          <Pressable
-            style={{
-              backgroundColor: 'red',
-              alignSelf: 'center',
-              borderRadius: 15,
-              padding: 10,
-              marginBottom: 30,
-            }}
-            onPress={() => navigation.navigate('ChangePassword', {user: user})}>
-            <Text style={{color: '#fff', fontWeight: 'bold'}}>
-              Change Password
+              UPDATE PROFILE
             </Text>
           </Pressable>
         </View>

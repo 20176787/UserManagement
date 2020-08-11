@@ -8,8 +8,10 @@ import {
   Image,
   Pressable,
   KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob/index';
+import HeaderTab from '../HeaderTab';
 export default function EditInfoUserScreen({navigation, route}) {
   const {data} = route.params;
   const {user} = route.params;
@@ -27,7 +29,7 @@ export default function EditInfoUserScreen({navigation, route}) {
     console.log('update', useData);
     await RNFetchBlob.fetch(
       'PUT',
-      `http://00760bf79d39.ngrok.io/api/auth/update/${data.id}`,
+      `http://35f5c59e544b.ngrok.io/api/auth/update/${data.id}`,
       {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + user.access_token,
@@ -42,90 +44,94 @@ export default function EditInfoUserScreen({navigation, route}) {
   };
   return (
     <SafeAreaView>
-      <KeyboardAvoidingView
-        style={{justifyContent: 'center', height: '95%'}}
-        behavior="padding">
-        <View style={{padding: 10}}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: 'bold',
-              color: 'red',
-              alignSelf: 'center',
-              padding: 20,
-            }}>
-            UPDATE INFO
-          </Text>
-          <Image
-            style={styles.imageAvatar}
-            source={require('../../store/img/logo.png')}
-          />
-          <View>
-            <Text>Name</Text>
-            <TextInput
-              placeholder="name"
-              placeholderTextColor={'#abae94'}
-              defaultValue={data.name}
-              onChangeText={(text) => setName(text)}
-              style={styles.input}
+      <HeaderTab navigation={navigation} />
+      <ScrollView>
+        <KeyboardAvoidingView
+          style={{justifyContent: 'center', height: '100%'}}
+          behavior="padding">
+          <View style={{padding: 10}}>
+            <Image
+              style={styles.imageAvatar}
+              source={require('../../store/img/logo.png')}
             />
-          </View>
-          <View>
-            <Text>PhoneNumber</Text>
-            <Text style={{paddingTop: 10, paddingBottom: 10, color: '#abae94'}}>
-              {data.phone}
-            </Text>
-          </View>
-          <View>
-            <Text>Address</Text>
-            <TextInput
-              placeholder="address"
-              placeholderTextColor={'#abae94'}
-              defaultValue={data.address}
-              onChangeText={(text) => setAddress(text)}
-              style={styles.input}
-            />
-          </View>
-          <View>
-            <Text>Date of Birth</Text>
-            <TextInput
-              placeholder="Date of Birth"
-              placeholderTextColor={'#abae94'}
-              defaultValue={data.birth}
-              onChangeText={(text) => setBirth(text)}
-              style={styles.input}
-            />
-          </View>
-          <View>
-            <Text>Email</Text>
-            <TextInput
-              placeholder="email"
-              placeholderTextColor={'#abae94'}
-              defaultValue={data.email}
-              onChangeText={(text) => setEmail(text)}
-              style={styles.input}
-            />
-          </View>
-          <Pressable
-            style={{
-              alignSelf: 'center',
-              backgroundColor: 'red',
-              borderRadius: 15,
-              marginTop: 20,
-            }}
-            onPress={() => onUpdate()}>
             <Text
               style={{
-                margin: 10,
                 fontSize: 20,
                 fontWeight: 'bold',
-                color: '#fff',
+                color: 'red',
+                alignSelf: 'center',
+                padding: 20,
               }}>
-              Update
+              UPDATE INFO
             </Text>
-          </Pressable>
-        </View>
-      </KeyboardAvoidingView>
+            <View>
+              <Text>Name</Text>
+              <TextInput
+                placeholder="name"
+                placeholderTextColor={'#abae94'}
+                defaultValue={data.name}
+                onChangeText={(text) => setName(text)}
+                style={styles.input}
+              />
+            </View>
+            <View>
+              <Text>PhoneNumber</Text>
+              <Text
+                style={{paddingTop: 10, paddingBottom: 10, color: '#abae94'}}>
+                {data.phone}
+              </Text>
+            </View>
+            <View>
+              <Text>Address</Text>
+              <TextInput
+                placeholder="address"
+                placeholderTextColor={'#abae94'}
+                defaultValue={data.address}
+                onChangeText={(text) => setAddress(text)}
+                style={styles.input}
+              />
+            </View>
+            <View>
+              <Text>Date of Birth</Text>
+              <TextInput
+                placeholder="Date of Birth"
+                placeholderTextColor={'#abae94'}
+                defaultValue={data.birth}
+                onChangeText={(text) => setBirth(text)}
+                style={styles.input}
+              />
+            </View>
+            <View>
+              <Text>Email</Text>
+              <TextInput
+                placeholder="email"
+                placeholderTextColor={'#abae94'}
+                defaultValue={data.email}
+                onChangeText={(text) => setEmail(text)}
+                style={styles.input}
+              />
+            </View>
+            <Pressable
+              style={{
+                alignSelf: 'center',
+                backgroundColor: 'red',
+                borderRadius: 15,
+                marginTop: 20,
+              }}
+              onPress={() => onUpdate()}>
+              <Text
+                style={{
+                  margin: 10,
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: '#fff',
+                }}>
+                Update
+              </Text>
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </ScrollView>
     </SafeAreaView>
   );
 }
