@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import HeaderTab from '../HeaderTab';
+import {path} from "../../../App";
 export default function ChangePasswordScreen({route, navigation}) {
   const [oldPassword, setOldPassword] = useState();
   const [newPassword, setNewPassword] = useState();
@@ -25,7 +26,7 @@ export default function ChangePasswordScreen({route, navigation}) {
     console.log('update', data_password_change);
     await RNFetchBlob.fetch(
       'POST',
-      'http://35f5c59e544b.ngrok.io/api/auth/change_password',
+      `${path}/api/auth/change_password`,
       {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + user.access_token,

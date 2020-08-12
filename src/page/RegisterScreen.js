@@ -9,11 +9,11 @@ import {
   Dimensions,
   StyleSheet,
   KeyboardAvoidingView,
-  TextInput,
+  TextInput, Alert,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {setAuthUser} from '../shared/OnValueChange';
-import {AuthContext} from '../../App';
+import {AuthContext, path} from '../../App';
 const {width, height} = Dimensions.get('window');
 export default function RegisterScreen({navigation}) {
   const {signUp} = React.useContext(AuthContext);
@@ -30,7 +30,7 @@ export default function RegisterScreen({navigation}) {
   const onSignUp = async () => {
     await RNFetchBlob.fetch(
       'POST',
-      'http://35f5c59e544b.ngrok.io/api/auth/signup/',
+      `${path}/api/auth/signup/`,
       {'Content-Type': 'application/json'},
       JSON.stringify(useData),
     )
@@ -39,6 +39,12 @@ export default function RegisterScreen({navigation}) {
         setAuthUser({access_token, phone, password});
         if (access_token != undefined) {
           signUp({phone, password});
+        } else {
+          console.log(JSON.parse(res.text()).error);
+           Alert.alert(`${JSON.parse(res.text()).error.password[0]}`,`${JSON.parse(res.text()).error.phone[0]}`);
+          setPassword(null);
+          setConfirmPassword(null);
+
         }
       })
       .catch((error) => console.log(error));
@@ -77,6 +83,7 @@ export default function RegisterScreen({navigation}) {
               <TextInput
                 secureTextEntry
                 placeholder="password...."
+                defaultValue={password}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
                 onChangeText={(text) => setPassword(text)}
@@ -86,6 +93,7 @@ export default function RegisterScreen({navigation}) {
               <TextInput
                 secureTextEntry
                 placeholder="Confirm password...."
+                defaultValue={confirmPassword}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
                 onChangeText={(text) => setConfirmPassword(text)}
@@ -96,7 +104,7 @@ export default function RegisterScreen({navigation}) {
             </Pressable>
             <Pressable
               style={styles.forgot}
-              onPress={() => navigation.navigate('Login')}>
+              onPress={() => navigation.goBack()}>
               <Text style={styles.forgot}>
                 already has an account?
                 {

@@ -19,6 +19,7 @@ import Icon from 'react-native-vector-icons/Entypo';
 import Modal from 'react-native-modal';
 import {DrawerActions} from '@react-navigation/native';
 import {NavigationEvents} from 'react-navigation';
+import {path} from '../../../App';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -43,14 +44,10 @@ export default function InformationScreen({navigation}) {
         }
         try {
           setUser(JSON.parse(str));
-          RNFetchBlob.fetch(
-            'GET',
-            'http://35f5c59e544b.ngrok.io/api/auth/user/',
-            {
-              'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + JSON.parse(str).access_token,
-            },
-          )
+          RNFetchBlob.fetch('GET', `${path}/api/auth/user/`, {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + JSON.parse(str).access_token,
+          })
             .then((res) => {
               console.log('hello world', res.data);
               setData(JSON.parse(res.data));
@@ -62,7 +59,6 @@ export default function InformationScreen({navigation}) {
         }
       });
     };
-    getData();
     navigation.addListener('focus', () => getData());
   }, []);
   const drawLine = () => {
@@ -108,10 +104,7 @@ export default function InformationScreen({navigation}) {
         </Pressable>
       </View>
       <View style={{alignItems: 'center'}}>
-        <Image
-          style={styles.imageAvatar}
-          source={require('../../store/img/logo.png')}
-        />
+        <Image style={styles.imageAvatar} source={{uri:data.avatar_url} || null} />
         <Text style={{fontSize: 20, fontWeight: 'bold'}}>{data.name}</Text>
         <Text style={{paddingTop: 5, color: '#3e3d3d'}}>
           GOOD PARTNER, GREAT SUCCESS
@@ -203,11 +196,11 @@ export default function InformationScreen({navigation}) {
             {drawLine()}
             <View
               style={{
-                flexDirection: 'row',
+                // flexDirection: 'row',
                 justifyContent: 'space-between',
                 margin: 20,
               }}>
-              <Text>Address</Text>
+              <Text style={{fontSize: 14, fontWeight: 'bold'}}>Address</Text>
               <Text>{data.address}</Text>
             </View>
           </View>

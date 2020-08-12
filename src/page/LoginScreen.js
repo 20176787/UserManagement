@@ -15,7 +15,8 @@ import {
 } from 'react-native';
 import {setAuthUser} from '../shared/OnValueChange';
 import RNFetchBlob from 'rn-fetch-blob';
-import {AuthContext} from '../../App';
+import {AuthContext, path} from '../../App';
+import {set} from "react-native-reanimated";
 
 const {width, height} = Dimensions.get('window');
 export default function LoginScreen({navigation}) {
@@ -31,21 +32,36 @@ export default function LoginScreen({navigation}) {
   const onSignIn = async () => {
     await RNFetchBlob.fetch(
       'POST',
-      'http://35f5c59e544b.ngrok.io/api/auth/login/',
+      `${path}/api/auth/login/`,
       {'Content-Type': 'application/json'},
       JSON.stringify(payload),
     )
       .then((res) => {
-        console.log(JSON.parse(res.text()).message);
+        console.log(JSON.parse(res.text()).error);
         let access_token = JSON.parse(res.text()).access_token;
         setAuthUser({access_token, phone, password});
         if (access_token != undefined) {
           signIn({phone, password});
+        } else {
+          Alert.alert('phone number or password not true');
+          setPassword(null);
+          setPhone(null);
         }
       })
       .catch((err) => {
         console.log(err);
       });
+  };
+  const checkLogin = () => {
+    if (phone == null) {
+      Alert.alert('please enter your phone');
+      setPassword(null);
+    } else if (password == null || password.length < 6) {
+      Alert.alert('please enter your password with length > 6');
+      setPassword(null);
+    } else {
+      onSignIn();
+    }
   };
   return (
     <SafeAreaView>
@@ -63,7 +79,8 @@ export default function LoginScreen({navigation}) {
             {/*<Text style={styles.logo}>Login</Text>*/}
             <View style={styles.inputView}>
               <TextInput
-                placeholder="Your email...."
+                placeholder="Your phone...."
+                defaultValue={phone}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
                 onChangeText={(text) => setPhone(text)}
@@ -74,6 +91,7 @@ export default function LoginScreen({navigation}) {
                 secureTextEntry
                 keyboardType="default"
                 placeholder="Your password...."
+                defaultValue={password}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
                 onChangeText={(text) => setPassword(text)}
@@ -84,7 +102,7 @@ export default function LoginScreen({navigation}) {
               onPress={() => navigation.navigate('ForgotPassword')}>
               <Text style={styles.forgot}>forgot password?</Text>
             </Pressable>
-            <Pressable style={styles.loginButton} onPress={() => onSignIn()}>
+            <Pressable style={styles.loginButton} onPress={() => checkLogin()}>
               <Text style={styles.loginText}>LOGIN</Text>
             </Pressable>
             <Pressable

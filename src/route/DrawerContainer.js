@@ -8,6 +8,7 @@ import EditInfoUserScreen from "../page/Home/EditInfoUserScreen";
 import ListUsersScreen from "../page/Home/ListUsersScreen";
 import ChangePasswordScreen from "../page/Home/ChangePasswordScreen";
 import UploadImageScreen from "../page/Home/UploadImageScreen";
+import ForgotPasswordScreen from "../page/ForgotPasswordScreen";
 const Drawer = createDrawerNavigator();
 export default function HomeContainer() {
   const dimensions = useWindowDimensions();
@@ -29,6 +30,7 @@ export default function HomeContainer() {
       <Drawer.Screen name={'List'} component={ListUsersScreen} />
       <Drawer.Screen name={'ChangePassword'} component={ChangePasswordScreen} />
       <Drawer.Screen name={'UploadImage'} component={UploadImageScreen} />
+      <Drawer.Screen name={'ForgotPassword'} component={ForgotPasswordScreen} />
     </Drawer.Navigator>
   );
 }

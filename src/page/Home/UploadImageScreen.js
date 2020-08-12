@@ -17,7 +17,9 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import HeaderTab from '../HeaderTab';
+import {path} from "../../../App";
 const {width, height} = Dimensions.get('window');
+
 export default function UploadImageScreen({route, navigation}) {
   const {user} = route.params;
   const [data, setData] = useReducer((data, {type, value}) => {
@@ -40,11 +42,10 @@ export default function UploadImageScreen({route, navigation}) {
         return dataImg;
     }
   }, []);
-  console.log(data)
   const onUploadImage = async () => {
     await RNFetchBlob.fetch(
       'POST',
-      'http://35f5c59e544b.ngrok.io/api/auth/fileUpload',
+      `${path}/api/auth/fileUpload/images`,
       {
         'Content-Type': 'multipart/form-data',
         Authorization: 'Bearer ' + user.access_token,

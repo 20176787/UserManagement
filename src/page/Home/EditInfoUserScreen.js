@@ -10,8 +10,12 @@ import {
   KeyboardAvoidingView,
   ScrollView,
 } from 'react-native';
+import ImagePicker from 'react-native-image-crop-picker/index';
 import RNFetchBlob from 'rn-fetch-blob/index';
 import HeaderTab from '../HeaderTab';
+import {path} from '../../../App';
+import Modal from 'react-native-modal';
+import moment from 'moment';
 export default function EditInfoUserScreen({navigation, route}) {
   const {data} = route.params;
   const {user} = route.params;
@@ -19,17 +23,62 @@ export default function EditInfoUserScreen({navigation, route}) {
   const [address, setAddress] = useState();
   const [birth, setBirth] = useState();
   const [email, setEmail] = useState();
+  const [avtUri, setAvtUri] = useState();
+  const [avatar_url, setAvatar_url] = useState();
+  const [modalVisible, setModalVisible] = useState(false);
   const useData = {
     name,
     address,
     birth,
     email,
+    // avatar_url,
   };
+  const onUploadImage = async () => {
+    await RNFetchBlob.fetch(
+      'POST',
+      `${path}/api/auth/fileUpload/avatar`,
+      {
+        'Content-Type': 'multipart/form-data',
+        Authorization: 'Bearer ' + user.access_token,
+      },
+
+      [
+        {
+          name: `${moment().utcOffset('+07:00')}`,
+          filename: `${moment().utcOffset('+07:00')}.jpg`,
+          data: RNFetchBlob.wrap(avtUri.uri || null),
+        },
+      ],
+    )
+      .uploadProgress((written, total) => {
+        console.log('uploaded', written / total);
+      })
+      .then((res) => {
+        console.log('success upLoad');
+        setAvatar_url(path + '/file/' + baseName(avtUri.uri || null));
+        cleanupImages();
+      })
+      .catch((error) => console.log(error));
+  };
+  const cleanupImages = () => {
+    ImagePicker.clean()
+      .then(() => {
+        // console.log('removed tmp images from tmp directory');
+      })
+      .catch((e) => {
+        alert(e);
+      });
+  };
+  function baseName(str) {
+    var base = new String(str).substring(str.lastIndexOf('/') + 1);
+    return base;
+  }
   const onUpdate = async () => {
     console.log('update', useData);
+    await onUploadImage();
     await RNFetchBlob.fetch(
       'PUT',
-      `http://35f5c59e544b.ngrok.io/api/auth/update/${data.id}`,
+      `${path}/api/auth/update/${data.id}`,
       {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + user.access_token,
@@ -52,18 +101,26 @@ export default function EditInfoUserScreen({navigation, route}) {
           <View style={{padding: 10}}>
             <Image
               style={styles.imageAvatar}
-              source={require('../../store/img/logo.png')}
+              source={
+                avtUri || {uri: data.avatar_url} ||
+                require('../../store/img/logo.png')
+              }
             />
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: 'bold',
-                color: 'red',
-                alignSelf: 'center',
-                padding: 20,
+            <Pressable
+              onPress={() => {
+                setModalVisible(true);
               }}>
-              UPDATE INFO
-            </Text>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: 'red',
+                  alignSelf: 'center',
+                  padding: 20,
+                }}>
+                Change Avatar
+              </Text>
+            </Pressable>
             <View>
               <Text>Name</Text>
               <TextInput
@@ -131,6 +188,50 @@ export default function EditInfoUserScreen({navigation, route}) {
             </Pressable>
           </View>
         </KeyboardAvoidingView>
+        <Modal
+          isVisible={modalVisible}
+          onBackdropPress={() => setModalVisible(false)}>
+          <View style={styles.modalView}>
+            <Pressable
+              style={{backgroundColor: '#868585', borderRadius: 10, margin: 10}}
+              onPress={() =>
+                ImagePicker.openPicker({
+                  width: 300,
+                  height: 400,
+                  cropping: true,
+                }).then((image) => {
+                  setModalVisible(false);
+                  setAvtUri({
+                    uri: image.path,
+                    width: image.width,
+                    height: image.height,
+                    mime: image.mime,
+                  });
+                  console.log(image);
+                })
+              }>
+              <Text style={{fontSize: 15, fontWeight: 'bold', padding: 10}}>
+                Select image from gallery
+              </Text>
+            </Pressable>
+            <Pressable
+              style={{backgroundColor: '#868585', borderRadius: 10, margin: 10}}
+              onPress={() => {
+                ImagePicker.openCamera({
+                  width: 300,
+                  height: 400,
+                  cropping: true,
+                }).then((image) => {
+                  setModalVisible(false);
+                  console.log(image);
+                });
+              }}>
+              <Text style={{fontSize: 15, fontWeight: 'bold', padding: 10}}>
+                Select image from camera
+              </Text>
+            </Pressable>
+          </View>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -155,5 +256,20 @@ const styles = StyleSheet.create({
     borderWidth: 5,
     marginBottom: 20,
     alignSelf: 'center',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
