@@ -9,14 +9,19 @@ import {
   Pressable,
   KeyboardAvoidingView,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker/index';
 import RNFetchBlob from 'rn-fetch-blob/index';
-import HeaderTab from '../HeaderTab';
+import HeaderTab from '../../shared/HeaderTab';
 import {path} from '../../../App';
 import Modal from 'react-native-modal';
 import moment from 'moment';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import HeaderUploadImageTab from "../../shared/HeaderUploadImageTab";
 export default function EditInfoUserScreen({navigation, route}) {
+  const {width, height} = Dimensions.get('window');
   const {data} = route.params;
   const {user} = route.params;
   const [name, setName] = useState();
@@ -26,12 +31,14 @@ export default function EditInfoUserScreen({navigation, route}) {
   const [avtUri, setAvtUri] = useState();
   const [avatar_url, setAvatar_url] = useState();
   const [modalVisible, setModalVisible] = useState(false);
+  const [date, setDate] = useState(new Date(1598051730000));
+  const [mode, setMode] = useState('date');
+  const [show, setShow] = useState(false);
   const useData = {
     name,
     address,
     birth,
     email,
-    // avatar_url,
   };
   const onUploadImage = async () => {
     await RNFetchBlob.fetch(
@@ -75,7 +82,9 @@ export default function EditInfoUserScreen({navigation, route}) {
   }
   const onUpdate = async () => {
     console.log('update', useData);
-    await onUploadImage();
+    if (avtUri != null) {
+      await onUploadImage();
+    }
     await RNFetchBlob.fetch(
       'PUT',
       `${path}/api/auth/update/${data.id}`,
@@ -91,9 +100,24 @@ export default function EditInfoUserScreen({navigation, route}) {
       })
       .catch((error) => console.log(error));
   };
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShow(Platform.OS === 'ios');
+    setBirth(moment(currentDate).format('L'));
+    console.log(moment(date).format('L'));
+  };
+
+  const showMode = (currentMode) => {
+    setShow(true);
+    setMode(currentMode);
+  };
+
+  const showDatepicker = () => {
+    showMode('date');
+  };
   return (
     <SafeAreaView>
-      <HeaderTab navigation={navigation} />
+      <HeaderUploadImageTab navigation={navigation} NameTab={'UPDATE PROFILE'} user={user} />
       <ScrollView>
         <KeyboardAvoidingView
           style={{justifyContent: 'center', height: '100%'}}
@@ -122,7 +146,7 @@ export default function EditInfoUserScreen({navigation, route}) {
               </Text>
             </Pressable>
             <View>
-              <Text>Name</Text>
+              <Text style={styles.textLabel}>Name</Text>
               <TextInput
                 placeholder="name"
                 placeholderTextColor={'#abae94'}
@@ -132,14 +156,14 @@ export default function EditInfoUserScreen({navigation, route}) {
               />
             </View>
             <View>
-              <Text>PhoneNumber</Text>
+              <Text style={styles.textLabel}>PhoneNumber</Text>
               <Text
                 style={{paddingTop: 10, paddingBottom: 10, color: '#abae94'}}>
                 {data.phone}
               </Text>
             </View>
             <View>
-              <Text>Address</Text>
+              <Text style={styles.textLabel}>Address</Text>
               <TextInput
                 placeholder="address"
                 placeholderTextColor={'#abae94'}
@@ -149,17 +173,35 @@ export default function EditInfoUserScreen({navigation, route}) {
               />
             </View>
             <View>
-              <Text>Date of Birth</Text>
-              <TextInput
-                placeholder="Date of Birth"
-                placeholderTextColor={'#abae94'}
-                defaultValue={data.birth}
-                onChangeText={(text) => setBirth(text)}
-                style={styles.input}
-              />
+              <Text style={styles.textLabel}>Date of Birth</Text>
+              <View>
+                <Pressable style={{}} onPress={showDatepicker}>
+                  <View style={{flexDirection: 'row',justifyContent:'space-between',paddingTop:10,paddingBottom:10}}>
+                    <View
+                      style={{
+                        backgroundColor: '#fff',
+                        width: width * 0.8,
+                        borderRadius: 5,
+                      }}>
+                      <Text style={styles.input}>{birth||data.birth}</Text>
+                    </View>
+                    <Icon name={'calendar'} size={50} color={'red'} />
+                  </View>
+                </Pressable>
+                {show && (
+                  <DateTimePicker
+                    testID="dateTimePicker"
+                    value={date}
+                    mode={mode}
+                    is24Hour={true}
+                    display="default"
+                    onChange={onChange}
+                  />
+                )}
+              </View>
             </View>
             <View>
-              <Text>Email</Text>
+              <Text style={styles.textLabel}>Email</Text>
               <TextInput
                 placeholder="email"
                 placeholderTextColor={'#abae94'}
@@ -183,7 +225,7 @@ export default function EditInfoUserScreen({navigation, route}) {
                   fontWeight: 'bold',
                   color: '#fff',
                 }}>
-                Update
+                UPDATE
               </Text>
             </Pressable>
           </View>
@@ -223,6 +265,12 @@ export default function EditInfoUserScreen({navigation, route}) {
                   cropping: true,
                 }).then((image) => {
                   setModalVisible(false);
+                  setAvtUri({
+                    uri: image.path,
+                    width: image.width,
+                    height: image.height,
+                    mime: image.mime,
+                  });
                   console.log(image);
                 });
               }}>
@@ -238,10 +286,11 @@ export default function EditInfoUserScreen({navigation, route}) {
 }
 const styles = StyleSheet.create({
   input: {
-    marginTop: 10,
+    marginTop: 15,
     marginBottom: 10,
     backgroundColor: '#fff',
     borderRadius: 5,
+    paddingLeft:2
   },
   text: {
     fontSize: 14,
@@ -271,5 +320,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  textLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });

@@ -15,11 +15,8 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
-import Icon from 'react-native-vector-icons/Entypo';
-import Modal from 'react-native-modal';
-import {DrawerActions} from '@react-navigation/native';
-import {NavigationEvents} from 'react-navigation';
 import {path} from '../../../App';
+import HeaderTab from '../../shared/HeaderTab';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -28,7 +25,6 @@ const wait = (timeout) => {
 export default function InformationScreen({navigation}) {
   const [user, setUser] = useState();
   const [modalVisible, setModalVisible] = useState(false);
-  const [userT, setUserT] = useState();
   const [data, setData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -38,6 +34,7 @@ export default function InformationScreen({navigation}) {
   }, []);
   useEffect(() => {
     const getData = () => {
+      setRefreshing(true);
       AsyncStorage.getItem('AuthUser').then((str) => {
         if (!str) {
           setUser(null);
@@ -51,6 +48,7 @@ export default function InformationScreen({navigation}) {
             .then((res) => {
               console.log('hello world', res.data);
               setData(JSON.parse(res.data));
+              setRefreshing(false);
             })
             .catch((error) => console.log(error));
         } catch (error) {
@@ -75,39 +73,16 @@ export default function InformationScreen({navigation}) {
   };
   return (
     <SafeAreaView style={{height: '100%'}}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginBottom: 20,
-          justifyContent: 'space-between',
-          backgroundColor: 'red',
-        }}>
-        <Pressable
-          style={{margin: 5}}
-          onPress={() => {
-            navigation.dispatch(DrawerActions.openDrawer());
-          }}>
-          <Icon name="home" size={35} color="#fff" marginTop={5} />
-        </Pressable>
-        <Pressable
-          style={{margin: 5}}
-          onPress={() => {
-            setModalVisible(true);
-          }}>
-          <Icon
-            name="dots-three-horizontal"
-            size={30}
-            color="#fff"
-            marginTop={5}
+      <HeaderTab navigation={navigation} NameTab={'INFORMATION'} />
+      <View style={{alignItems: 'center'}}>
+        <Pressable onPress={() => {}}>
+          <Image
+            style={styles.imageAvatar}
+            source={{uri: data.avatar_url} || null}
           />
         </Pressable>
-      </View>
-      <View style={{alignItems: 'center'}}>
-        <Image style={styles.imageAvatar} source={{uri:data.avatar_url} || null} />
-        <Text style={{fontSize: 20, fontWeight: 'bold'}}>{data.name}</Text>
-        <Text style={{paddingTop: 5, color: '#3e3d3d'}}>
-          GOOD PARTNER, GREAT SUCCESS
+        <Text style={{fontSize: 20, fontWeight: 'bold', color: 'red'}}>
+          {data.name}
         </Text>
       </View>
       <ScrollView
@@ -116,38 +91,6 @@ export default function InformationScreen({navigation}) {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
         <View style={styles.container}>
-          <View>
-            <Modal
-              isVisible={modalVisible}
-              onBackdropPress={() => setModalVisible(false)}>
-              <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                  <Text style={styles.modalText}>
-                    CÔNG TY TNHH LIÊN DOANH PHẦN MỀM AKB SOFTWARE
-                  </Text>
-                  <Text>
-                    Địa chỉ: Số 15, ngõ 64 Lê Trọng Tấn, Thanh Xuân, Hà Nội{' '}
-                  </Text>
-                  <Text> PostCode: 11411</Text>
-                  <Text> Email: info@akb.com.vn</Text>
-                  <Text> Tel: (+84 24) 3787 7529</Text>
-                  <Text> Fax: (+84 24) 3787 7533</Text>
-                  <Text> TaxCode: 0102637341</Text>
-                  <Pressable
-                    style={{
-                      ...styles.openButton,
-                      backgroundColor: '#2196F3',
-                      marginTop: 10,
-                    }}
-                    onPress={() => {
-                      setModalVisible(!modalVisible);
-                    }}>
-                    <Text style={styles.textStyle}>BACK</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </Modal>
-          </View>
           <View
             style={{
               borderRadius: 15,
@@ -156,52 +99,35 @@ export default function InformationScreen({navigation}) {
             }}>
             <View
               style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                margin: 20,
-              }}>
-              <Text>Full Name</Text>
-              <Text>{data.name}</Text>
-            </View>
-            {drawLine()}
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                margin: 20,
-              }}>
-              <Text>Email</Text>
-              <Text>{data.email}</Text>
-            </View>
-            {drawLine()}
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                margin: 20,
-              }}>
-              <Text>Phone Number</Text>
-              <Text>{data.phone}</Text>
-            </View>
-            {drawLine()}
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                margin: 20,
-              }}>
-              <Text>Birth</Text>
-              <Text>{data.birth}</Text>
-            </View>
-            {drawLine()}
-            <View
-              style={{
                 // flexDirection: 'row',
-                justifyContent: 'space-between',
-                margin: 20,
+                // justifyContent: 'space-between',
+                marginLeft: 20,
+                marginRight: 20,
+                marginTop: 10,
+                marginBottom: 10,
               }}>
-              <Text style={{fontSize: 14, fontWeight: 'bold'}}>Address</Text>
-              <Text>{data.address}</Text>
+              <Text style={styles.textLabel}>Full Name</Text>
+              <Text style={styles.textDetail}>{data.name}</Text>
+            </View>
+            {drawLine()}
+            <View style={styles.textForm}>
+              <Text style={styles.textLabel}>Email</Text>
+              <Text style={styles.textDetail}>{data.email}</Text>
+            </View>
+            {drawLine()}
+            <View style={styles.textForm}>
+              <Text style={styles.textLabel}>Phone Number</Text>
+              <Text style={styles.textDetail}>{data.phone}</Text>
+            </View>
+            {drawLine()}
+            <View style={styles.textForm}>
+              <Text style={styles.textLabel}>Birth</Text>
+              <Text style={styles.textDetail}>{data.birth}</Text>
+            </View>
+            {drawLine()}
+            <View style={styles.textForm}>
+              <Text style={styles.textLabel}>Address</Text>
+              <Text style={styles.textDetail}>{data.address}</Text>
             </View>
           </View>
           <Pressable
@@ -217,7 +143,7 @@ export default function InformationScreen({navigation}) {
               borderRadius: 15,
               padding: 10,
             }}>
-            <Text style={{color: '#fff', fontWeight: 'bold'}}>
+            <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 20}}>
               UPDATE PROFILE
             </Text>
           </Pressable>
@@ -272,5 +198,19 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
     fontWeight: 'bold',
+  },
+  textLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  textDetail: {
+    paddingRight: 50,
+    paddingTop: 10,
+  },
+  textForm: {
+    marginLeft: 20,
+    marginRight: 20,
+    marginTop: 10,
+    marginBottom: 10,
   },
 });

@@ -1,16 +1,16 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import InformationScreen from '../page/Home/InformationScreen';
 import ImageScreen from '../page/Home/ImageScreen';
 import {useWindowDimensions} from 'react-native';
 import DrawerContent from '../shared/DrawerContent';
-import EditInfoUserScreen from "../page/Home/EditInfoUserScreen";
-import ListUsersScreen from "../page/Home/ListUsersScreen";
-import ChangePasswordScreen from "../page/Home/ChangePasswordScreen";
-import UploadImageScreen from "../page/Home/UploadImageScreen";
-import ForgotPasswordScreen from "../page/ForgotPasswordScreen";
+import EditInfoUserScreen from '../page/Home/EditInfoUserScreen';
+import ListUsersScreen from '../page/Home/ListUsersScreen';
+import ChangePasswordScreen from '../page/Home/ChangePasswordScreen';
+import UploadImageScreen from '../page/Home/UploadImageScreen';
+import ForgotPasswordScreen from '../page/ForgotPasswordScreen';
 const Drawer = createDrawerNavigator();
-export default function HomeContainer() {
+export default function DrawerContainer({navigation}) {
   const dimensions = useWindowDimensions();
   return (
     <Drawer.Navigator

@@ -10,8 +10,8 @@ import {
   StyleSheet,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import HeaderTab from '../HeaderTab';
-import {path} from "../../../App";
+import HeaderTab from '../../shared/HeaderTab';
+import {path} from '../../../App';
 export default function ChangePasswordScreen({route, navigation}) {
   const [oldPassword, setOldPassword] = useState();
   const [newPassword, setNewPassword] = useState();
@@ -22,6 +22,8 @@ export default function ChangePasswordScreen({route, navigation}) {
     new_password_confirmation: confirmNewPassword,
   };
   const {user} = route.params;
+  const {data} = route.params;
+  console.log(data);
   const onUpdate = async () => {
     console.log('update', data_password_change);
     await RNFetchBlob.fetch(
@@ -41,14 +43,14 @@ export default function ChangePasswordScreen({route, navigation}) {
   };
   return (
     <SafeAreaView>
-      <HeaderTab navigation={navigation} />
+      <HeaderTab navigation={navigation} NameTab={'CHANGE PASSWORD'} />
       <KeyboardAvoidingView
         style={{justifyContent: 'center', height: '80%'}}
         behavior="padding">
         <View style={{padding: 10}}>
           <Image
             style={styles.imageAvatar}
-            source={require('../../store/img/logo.png')}
+            source={{uri: data.avatar_url} || null}
           />
           <Text
             style={{
@@ -58,7 +60,7 @@ export default function ChangePasswordScreen({route, navigation}) {
               alignSelf: 'center',
               padding: 20,
             }}>
-            Change Password
+            {data.name}
           </Text>
           <View>
             <Text>Old Password</Text>
@@ -105,7 +107,7 @@ export default function ChangePasswordScreen({route, navigation}) {
                 fontWeight: 'bold',
                 color: '#fff',
               }}>
-              Update
+              UPDATE
             </Text>
           </Pressable>
         </View>

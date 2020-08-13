@@ -10,24 +10,43 @@ import {
   FlatList,
   Dimensions,
   KeyboardAvoidingView,
+  Alert,
+  Modal,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob/index';
 import ImagePicker from 'react-native-image-crop-picker/index';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import HeaderTab from '../HeaderTab';
-import {path} from "../../../App";
+import HeaderTab from '../../shared/HeaderTab';
+import {path} from '../../../App';
+import ImageResizer from 'react-native-image-resizer';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import HeaderUploadImageTab from '../../shared/HeaderUploadImageTab';
 const {width, height} = Dimensions.get('window');
 
 export default function UploadImageScreen({route, navigation}) {
   const {user} = route.params;
-  const [data, setData] = useReducer((data, {type, value}) => {
+  const {data} = route.params;
+  const [resizeImageUri, setResizedImageUri] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [imageIndex, setImageIndex] = useState(0);
+  const [datas, setDatas] = useReducer((datas, {type, value}) => {
+    switch (type) {
+      case 'add':
+        return [...datas, value];
+      case 'remove':
+        return datas.filter((index) => index !== value);
+      default:
+        return datas;
+    }
+  }, []);
+  const [dataImgs, setDataImgs] = useReducer((data, {type, value}) => {
     switch (type) {
       case 'add':
         return [...data, value];
       case 'remove':
-        return data.filter(( index) => index !== value);
+        return data.filter((index) => index.id !== value);
       default:
         return data;
     }
@@ -43,26 +62,28 @@ export default function UploadImageScreen({route, navigation}) {
     }
   }, []);
   const onUploadImage = async () => {
-    await RNFetchBlob.fetch(
-      'POST',
-      `${path}/api/auth/fileUpload/images`,
-      {
-        'Content-Type': 'multipart/form-data',
-        Authorization: 'Bearer ' + user.access_token,
-      },
-      data,
-    )
-      .uploadProgress((written, total) => {
-        console.log('uploaded', written / total);
-      })
-      .then((res) => {
-        console.log('success upLoad');
-        cleanupImages();
-        imgs.map((i) => setImgs({type: 'remove', value: i}));
-        data.map((i) => setData({type: 'remove', value: i}));
-        navigation.navigate('Images');
-      })
-      .catch((error) => console.log(error));
+    imgs[0] != undefined
+      ? RNFetchBlob.fetch(
+          'POST',
+          `${path}/api/auth/fileUpload/images`,
+          {
+            'Content-Type': 'multipart/form-data',
+            Authorization: 'Bearer ' + user.access_token,
+          },
+          datas,
+        )
+          .uploadProgress((written, total) => {
+            console.log('uploaded', written / total);
+          })
+          .then((res) => {
+            console.log('success upLoad');
+            cleanupImages();
+            imgs.map((i) => setImgs({type: 'remove', value: i}));
+            datas.map((i) => setDatas({type: 'remove', value: i}));
+            navigation.navigate('Images');
+          })
+          .catch((error) => console.log(error))
+      : Alert.alert('No image selected');
   };
   const cleanupImages = () => {
     ImagePicker.clean()
@@ -74,41 +95,91 @@ export default function UploadImageScreen({route, navigation}) {
         alert(e);
       });
   };
-  const pickImage = () => {
+  const pickImage = async () => {
     console.log(moment().utcOffset('+07:00'));
-    ImagePicker.openPicker({
+    await ImagePicker.openPicker({
       multiple: true,
     })
       .then((images) => {
-        images.map((i, key) => {
-          setImgs({
-            type: 'add',
-            value: {
-              uri: i.path,
-              width: width / 2 - 10,
-              height: width / 2 - 10,
-              mime: i.mime,
-            },
-          });
-          setData({
-            type: 'add',
-            value: {
-              name: `${moment().utcOffset('+07:00')}`,
-              filename: `${moment().utcOffset('+07:00')}.jpg`,
-              data: RNFetchBlob.wrap(i.path),
-            },
-          });
+        images.map(async (i, key) => {
+          ImageResizer.createResizedImage(
+            i.path,
+            i.width * 0.3,
+            i.height * 0.3,
+            'JPEG',
+            40,
+          )
+            .then(({uri}) => {
+              setImgs({
+                type: 'add',
+                value: {
+                  uri: i.path,
+                  width: width - 20,
+                  height: width / 2 - 10,
+                  mime: i.mime,
+                },
+              });
+              setDatas({
+                type: 'add',
+                value: {
+                  name: `${moment().utcOffset('+07:00')}`,
+                  filename: `${moment().utcOffset('+07:00')}.jpg`,
+                  data: RNFetchBlob.wrap(uri),
+                },
+              });
+              setDataImgs({
+                type: 'add',
+                value: {
+                  props: {},
+                  url: i.path,
+                  id: i.id,
+                },
+              });
+              console.log('uri', uri);
+            })
+            .catch((err) => {
+              console.log(err);
+              return Alert.alert(
+                'Unable to resize the photo',
+                'Check the console for full the error message',
+              );
+            });
         });
       })
       .catch((e) => alert(e));
   };
+  const resize = ({image}) => {
+    ImageResizer.createResizedImage(
+      image.path,
+      image.width * 0.3,
+      image.height * 0.3,
+      'JPEG',
+      40,
+    )
+      .then(({uri}) => {
+        setResizedImageUri(uri);
+        console.log('uri', uri);
+        return uri;
+      })
+      .catch((err) => {
+        console.log(err);
+        return Alert.alert(
+          'Unable to resize the photo',
+          'Check the console for full the error message',
+        );
+      });
+  };
   return (
     <SafeAreaView>
       <View>
-        <HeaderTab navigation={navigation} />
+        <HeaderUploadImageTab
+          navigation={navigation}
+          NameTab={'UPLOAD IMAGES'}
+          user={user}
+        />
         <Image
           style={styles.imageAvatar}
-          source={require('../../store/img/logo.png')}
+          source={{uri: data.avatar_url} || require('../../store/img/logo.png')}
         />
         <Text
           style={{
@@ -117,23 +188,33 @@ export default function UploadImageScreen({route, navigation}) {
             color: 'red',
             alignSelf: 'center',
           }}>
-          Upload Image
+          {data.name}
         </Text>
         {imgs[0] != undefined ? (
           <FlatList
             data={imgs}
             style={{height: '45%', margin: 10}}
-            numColumns={2}
-            renderItem={({item}) => (
+            numColumns={1}
+            renderItem={({item, index}) => (
               <View>
                 <View style={{margin: 1}}>
-                  <Image source={item} />
+                  <Pressable
+                    onPress={() => {
+                      setModalVisible(true);
+                      setImageIndex(index);
+                    }}>
+                    <Image source={item} />
+                  </Pressable>
                   <Pressable
                     style={{position: 'absolute'}}
                     onPress={() => {
                       setImgs({
                         type: 'remove',
                         value: item,
+                      });
+                      setDataImgs({
+                        type: 'remove',
+                        value: item.id,
                       });
                     }}>
                     <Icon name="cancel" size={30} color="black" marginTop={5} />
@@ -166,18 +247,32 @@ export default function UploadImageScreen({route, navigation}) {
             style={{backgroundColor: 'red', padding: 10, borderRadius: 15}}
             onPress={pickImage}>
             <Text style={{color: '#fff', fontWeight: 'bold'}}>
-              Select Image
+              SELECT IMAGES
             </Text>
           </Pressable>
           <Pressable
             style={{backgroundColor: 'red', padding: 10, borderRadius: 15}}
             onPress={onUploadImage}>
             <Text style={{color: '#fff', fontWeight: 'bold'}}>
-              Upload Image
+              UPLOAD IMAGES
             </Text>
           </Pressable>
         </View>
       </View>
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}>
+        <ImageViewer
+          imageUrls={dataImgs}
+          index={imageIndex}
+          onSwipeDown={() => {
+            setModalVisible(false);
+          }}
+          onMove={(data) => console.log(data)}
+          enableSwipeDown={true}
+        />
+      </Modal>
     </SafeAreaView>
   );
 }

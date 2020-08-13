@@ -14,7 +14,7 @@ import {DrawerContentScrollView, DrawerItem} from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import RNFetchBlob from 'rn-fetch-blob/index';
 import AsyncStorage from '@react-native-community/async-storage';
-import {AuthContext} from '../../App';
+import {AuthContext, path} from '../../App';
 export default function DrawerContent(props) {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const {signOut} = React.useContext(AuthContext);
@@ -22,6 +22,7 @@ export default function DrawerContent(props) {
     setIsDarkTheme(!isDarkTheme);
   };
   const [user, setUser] = useState();
+  const [isFocus, setIsFocus] = useState(false);
   const [data, setData] = useState({});
   useEffect(() => {
     AsyncStorage.getItem('AuthUser').then((str) => {
@@ -30,14 +31,10 @@ export default function DrawerContent(props) {
       }
       try {
         setUser(JSON.parse(str));
-        RNFetchBlob.fetch(
-          'GET',
-          'http://3e2f0304c0ff.ngrok.io/api/auth/user/',
-          {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + JSON.parse(str).access_token,
-          },
-        )
+        RNFetchBlob.fetch('GET', `${path}/api/auth/user/`, {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + JSON.parse(str).access_token,
+        })
           .then((res) => {
             console.log('hello world', res.data);
             setData(JSON.parse(res.data));
@@ -48,7 +45,7 @@ export default function DrawerContent(props) {
         throw error;
       }
     });
-  }, []);
+  }, [props]);
   return (
     <View style={{flex: 1}}>
       <DrawerContentScrollView {...props}>
@@ -56,12 +53,14 @@ export default function DrawerContent(props) {
           <View style={{paddingLeft: 20}}>
             <View style={{flexDirection: 'row', marginTop: 15}}>
               <Avatar.Image
-                source={require('../store/img/logo.png')}
+                source={
+                  {uri: data.avatar_url} || require('../store/img/logo.png')
+                }
                 size={50}
               />
               <View style={{marginLeft: 15, flexDirection: 'column'}}>
-                <Title style={styles.title}>Captain Beemo</Title>
-                <Caption style={styles.caption}>@Huy1407</Caption>
+                <Title style={styles.title}>{data.name}</Title>
+                <Caption style={styles.caption}>@user</Caption>
               </View>
             </View>
             {/*<View>*/}
@@ -92,7 +91,7 @@ export default function DrawerContent(props) {
             )}
             label={'Images'}
             onPress={() => {
-              props.navigation.navigate('Images');
+              props.navigation.navigate('Images', {user: user, data: data});
             }}
           />
           <DrawerItem
@@ -101,7 +100,10 @@ export default function DrawerContent(props) {
             )}
             label={'Change Password'}
             onPress={() => {
-              props.navigation.navigate('ChangePassword', {user: user});
+              props.navigation.navigate('ChangePassword', {
+                user: user,
+                data: data,
+              });
             }}
           />
           <DrawerItem
@@ -110,19 +112,9 @@ export default function DrawerContent(props) {
             )}
             label={'Update Profile'}
             onPress={() => {
-              props.navigation.navigate('EditUser',{user:user,data:data});
+              props.navigation.navigate('EditUser', {user: user, data: data});
             }}
           />
-        </Drawer.Section>
-        <Drawer.Section title={'Preferences'}>
-          <TouchableRipple onPress={() => toggleTheme()}>
-            <View style={styles.preference}>
-              <Text>Dark Theme</Text>
-              <View pointerEvents={'none'}>
-                <Switch value={isDarkTheme} />
-              </View>
-            </View>
-          </TouchableRipple>
         </Drawer.Section>
       </DrawerContentScrollView>
       <Drawer.Section style={styles.bottomDrawerSection}>

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -12,12 +12,18 @@ import {
   TextInput,
   Image,
   Alert,
+  RefreshControl,
+  ScrollView,
 } from 'react-native';
 import {setAuthUser} from '../shared/OnValueChange';
 import RNFetchBlob from 'rn-fetch-blob';
 import {AuthContext, path} from '../../App';
-import {set} from "react-native-reanimated";
-
+import {set} from 'react-native-reanimated';
+const wait = (timeout) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
 const {width, height} = Dimensions.get('window');
 export default function LoginScreen({navigation}) {
   const {signIn} = React.useContext(AuthContext);
@@ -25,11 +31,16 @@ export default function LoginScreen({navigation}) {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(() => {
+    wait(2000).then(() => setRefreshing(false));
+  }, []);
   const payload = {
     phone: phone,
     password: password,
   };
   const onSignIn = async () => {
+    setRefreshing(true);
     await RNFetchBlob.fetch(
       'POST',
       `${path}/api/auth/login/`,
@@ -37,6 +48,7 @@ export default function LoginScreen({navigation}) {
       JSON.stringify(payload),
     )
       .then((res) => {
+        setRefreshing(false);
         console.log(JSON.parse(res.text()).error);
         let access_token = JSON.parse(res.text()).access_token;
         setAuthUser({access_token, phone, password});
@@ -70,7 +82,10 @@ export default function LoginScreen({navigation}) {
         source={require('../store/img/avatar.png')}>
         <KeyboardAvoidingView
           style={{flex: 1, justifyContent: 'center'}}
-          behavior="padding">
+          behavior="padding"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
           <View style={styles.container}>
             <Image
               style={styles.imageAvatar}
