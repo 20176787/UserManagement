@@ -12,11 +12,14 @@ import {
   KeyboardAvoidingView,
   RefreshControl,
   Alert,
+  Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
 import {path} from '../../../App';
 import HeaderTab from '../../shared/HeaderTab';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import ImageViewer from 'react-native-image-zoom-viewer';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -75,7 +78,37 @@ export default function InformationScreen({navigation}) {
     <SafeAreaView style={{height: '100%'}}>
       <HeaderTab navigation={navigation} NameTab={'INFORMATION'} />
       <View style={{alignItems: 'center'}}>
-        <Pressable onPress={() => {}}>
+        <Pressable
+          onPress={() => {
+            setModalVisible(true);
+            return (
+              <Modal
+                visible={modalVisible}
+                transparent={true}
+                onRequestClose={() => setModalVisible(false)}>
+                <Pressable
+                  onPress={() => setModalVisible(false)}
+                  style={{position: 'absolute'}}>
+                  <Icon name="cancel" size={30} color="#fff" marginTop={5} />
+                </Pressable>
+                <ImageViewer
+                  imageUrls={[
+                    {
+                      props: {},
+                      url: data.avatar_url,
+                    },
+                  ]}
+                  index={0}
+                  onSwipeDown={() => {
+                    setModalVisible(false);
+                  }}
+                  onMove={(data) => console.log(data)}
+                  enableSwipeDown={true}
+                  style={{zIndex: -1}}
+                />
+              </Modal>
+            );
+          }}>
           <Image
             style={styles.imageAvatar}
             source={{uri: data.avatar_url} || null}
