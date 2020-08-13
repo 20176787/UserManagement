@@ -123,56 +123,13 @@ export default function App({navigation}) {
   );
 }
 // import React, {useState} from 'react';
-// import {View, Button, Platform, Pressable, Text} from 'react-native';
-// import DateTimePicker from '@react-native-community/datetimepicker';
-// import Icon from 'react-native-vector-icons/FontAwesome';
-// import moment from 'moment';
+// import ListUserScreen from './src/page/ListUserScreen';
+// import LoginScreen from './src/page/LoginScreen';
+// import TestScreen from './src/page/Home/TestScreen';
 // export default function App() {
-//   const [date, setDate] = useState(new Date(1598051730000));
-//   const [mode, setMode] = useState('date');
-//   const [show, setShow] = useState(false);
-//   const [birth, setBirth] = useState();
-//
-//   const onChange = (event, selectedDate) => {
-//     const currentDate = selectedDate || date;
-//     setShow(Platform.OS === 'ios');
-//     setBirth(moment(currentDate).format('L'));
-//     console.log(moment(date).format('L'));
-//   };
-//
-//   const showMode = (currentMode) => {
-//     setShow(true);
-//     setMode(currentMode);
-//   };
-//
-//   const showDatepicker = () => {
-//     showMode('date');
-//   };
-//
-//   const showTimepicker = () => {
-//     showMode('time');
-//   };
-//
-//   return (
-//     <View>
-//       <Pressable style={{}} onPress={showDatepicker}>
-//         <View style={{flexDirection:"row",margin:20}}>
-//           <View style={{backgroundColor: '#fff',width:200,marginLeft:20}}>
-//             <Text style={{alignSelf:"center",justifyContent:'center',padding:10}}>{birth}</Text>
-//           </View>
-//           <Icon name={'calendar'} size={50} color={'red'} />
-//         </View>
-//       </Pressable>
-//       {show && (
-//         <DateTimePicker
-//           testID="dateTimePicker"
-//           value={date}
-//           mode={mode}
-//           is24Hour={true}
-//           display="default"
-//           onChange={onChange}
-//         />
-//       )}
-//     </View >
-//   );
+//   return(
+//       // <ListUserScreen/>
+//       // <LoginScreen/>
+//       <TestScreen/>
+//   )
 // }

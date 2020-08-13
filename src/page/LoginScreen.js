@@ -19,6 +19,7 @@ import {setAuthUser} from '../shared/OnValueChange';
 import RNFetchBlob from 'rn-fetch-blob';
 import {AuthContext, path} from '../../App';
 import {set} from 'react-native-reanimated';
+import Modal from 'react-native-modal';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -27,10 +28,9 @@ const wait = (timeout) => {
 const {width, height} = Dimensions.get('window');
 export default function LoginScreen({navigation}) {
   const {signIn} = React.useContext(AuthContext);
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(null);
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
     wait(2000).then(() => setRefreshing(false));
@@ -40,6 +40,7 @@ export default function LoginScreen({navigation}) {
     password: password,
   };
   const onSignIn = async () => {
+    setModalVisible(true);
     setRefreshing(true);
     await RNFetchBlob.fetch(
       'POST',
@@ -55,8 +56,10 @@ export default function LoginScreen({navigation}) {
         if (access_token != undefined) {
           signIn({phone, password});
         } else {
-          Alert.alert('phone number or password not true');
-          setPassword(null);
+          Alert.alert('WARRING', 'phone number or password not true');
+          setModalVisible(false);
+          setRefreshing(false);
+          // setPassword(null);
           setPhone(null);
         }
       })
@@ -128,6 +131,15 @@ export default function LoginScreen({navigation}) {
           </View>
         </KeyboardAvoidingView>
       </ImageBackground>
+      <Modal
+        isVisible={modalVisible}
+        onBackdropPress={() => setModalVisible(false)}>
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+      </Modal>
     </SafeAreaView>
   );
 }

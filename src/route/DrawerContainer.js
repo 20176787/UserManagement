@@ -31,6 +31,7 @@ export default function DrawerContainer({navigation}) {
       <Drawer.Screen name={'ChangePassword'} component={ChangePasswordScreen} />
       <Drawer.Screen name={'UploadImage'} component={UploadImageScreen} />
       <Drawer.Screen name={'ForgotPassword'} component={ForgotPasswordScreen} />
+      <Drawer.Screen name={'ListUser'} component={ListUsersScreen} />
     </Drawer.Navigator>
   );
 }

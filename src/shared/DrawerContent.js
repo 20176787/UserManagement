@@ -115,6 +115,17 @@ export default function DrawerContent(props) {
               props.navigation.navigate('EditUser', {user: user, data: data});
             }}
           />
+          {data.level == '1' ? (
+            <DrawerItem
+              icon={({color, size}) => (
+                <Icon name={'format-list-bulleted'} color={color} size={size} />
+              )}
+              label={'List User'}
+              onPress={() => {
+                props.navigation.navigate('ListUser', {user: user});
+              }}
+            />
+          ) : null}
         </Drawer.Section>
       </DrawerContentScrollView>
       <Drawer.Section style={styles.bottomDrawerSection}>
@@ -124,13 +135,9 @@ export default function DrawerContent(props) {
           )}
           label="Sign Out"
           onPress={() => {
-            RNFetchBlob.fetch(
-              'GET',
-              'http://2299aa78b423.ngrok.io/api/auth/logout/',
-              {
-                Authorization: user.access_token,
-              },
-            )
+            RNFetchBlob.fetch('GET', `${path}/api/auth/logout/`, {
+              Authorization: user.access_token,
+            })
               .then(() => {
                 console.log('logout success');
                 AsyncStorage.removeItem('AuthUser');

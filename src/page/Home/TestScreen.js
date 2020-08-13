@@ -1,117 +1,105 @@
-import React, {useCallback, useState} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
   SafeAreaView,
-  Image,
-  ImageBackground,
   Pressable,
-  Dimensions,
   StyleSheet,
+  ImageBackground,
+  Dimensions,
+  StatusBar,
   KeyboardAvoidingView,
   TextInput,
+  Image,
   Alert,
-  ScrollView,
   RefreshControl,
+  ScrollView,
+  FlatList,
 } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
-import {setAuthUser} from '../shared/OnValueChange';
-import {AuthContext, path} from '../../App';
+import {Fade, Placeholder, PlaceholderLine} from 'rn-placeholder';
 import Modal from 'react-native-modal';
-const {width, height} = Dimensions.get('window');
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
 };
-export default function RegisterScreen({navigation}) {
-  const {signUp} = React.useContext(AuthContext);
-  const [phone, setPhone] = useState('');
+const {width, height} = Dimensions.get('window');
+export default function TestScreen({navigation}) {
+  // const {signIn} = React.useContext(AuthContext);
+  const [phone, setPhone] = useState(null);
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [modalVisible, setModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const onRefresh = useCallback(() => {
     wait(2000).then(() => setRefreshing(false));
   }, []);
-  const useData = {
-    name: username,
+  const payload = {
     phone: phone,
     password: password,
-    password_confirmation: confirmPassword,
   };
-  const onSignUp = async () => {
+  // const onSignIn = async () => {
+  //   setRefreshing(true);
+  //   await RNFetchBlob.fetch(
+  //     'POST',
+  //     `${path}/api/auth/login/`,
+  //     {'Content-Type': 'application/json'},
+  //     JSON.stringify(payload),
+  //   )
+  //     .then((res) => {
+  //       setRefreshing(false);
+  //       console.log(JSON.parse(res.text()).error);
+  //       let access_token = JSON.parse(res.text()).access_token;
+  //       setAuthUser({access_token, phone, password});
+  //       if (access_token != undefined) {
+  //         signIn({phone, password});
+  //       } else {
+  //         Alert.alert('phone number or password not true');
+  //         setPassword(null);
+  //         setPhone(null);
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // };
+  const onSignIn = () => {
     setModalVisible(true);
     setRefreshing(true);
-    await RNFetchBlob.fetch(
-      'POST',
-      `${path}/api/auth/signup/`,
-      {'Content-Type': 'application/json'},
-      JSON.stringify(useData),
-    )
-      .then((res) => {
-        let access_token = JSON.parse(res.text()).access_token;
-        setAuthUser({access_token, phone, password});
-        if (access_token != undefined) {
-          signUp({phone, password});
-        } else {
-          setModalVisible(false);
-          setRefreshing(false);
-          console.log(JSON.parse(res.text()).error);
-          Alert.alert('WARRING', `${JSON.parse(res.text()).error.phone[0]}`);
-          setPassword(null);
-          setConfirmPassword(null);
-        }
-      })
-      .catch((error) => console.log(error));
   };
-  const checkRegister = () => {
-    if (username == null) {
-      Alert.alert('WARRING', 'please enter username');
-      setPassword(null);
-      setConfirmPassword(null);
-    } else if (phone == null) {
+  const checkLogin = () => {
+    if (phone == null) {
       Alert.alert('WARRING', 'please enter your phone');
       setPassword(null);
-      setConfirmPassword(null);
     } else if (password == null || password.length < 6) {
       Alert.alert('WARRING', 'please enter your password with length > 6');
       setPassword(null);
-      setConfirmPassword(null);
-    } else if (password != confirmPassword) {
-      Alert.alert('WARRING', 'your confirm password is not correct');
-      setPassword(null);
-      setConfirmPassword(null);
     } else {
-      onSignUp();
+      onSignIn();
     }
   };
   return (
     <SafeAreaView>
       <ImageBackground
         style={styles.ImageBackground}
-        source={require('../store/img/avatar.png')}>
+        source={require('../../store/img/avatar.png')}>
         <KeyboardAvoidingView
           style={{flex: 1, justifyContent: 'center'}}
-          behavior="padding">
+          behavior="padding"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
           <View style={styles.container}>
             <Image
               style={styles.imageAvatar}
-              source={require('../store/img/logo.png')}
+              source={require('../../store/img/logo.png')}
             />
-            {/*<Text style={styles.logo}>Register</Text>*/}
+            {/*<Text style={styles.logo}>Login</Text>*/}
             <View style={styles.inputView}>
               <TextInput
-                placeholder="Username...."
-                placeholderTextColor={'#abae94'}
-                style={styles.inputText}
-                onChangeText={(text) => setUsername(text)}
-              />
-            </View>
-            <View style={styles.inputView}>
-              <TextInput
-                placeholder="phone...."
+                placeholder="Your phone...."
+                defaultValue={phone}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
                 onChangeText={(text) => setPhone(text)}
@@ -120,40 +108,26 @@ export default function RegisterScreen({navigation}) {
             <View style={styles.inputView}>
               <TextInput
                 secureTextEntry
-                placeholder="password...."
+                keyboardType="default"
+                placeholder="Your password...."
                 defaultValue={password}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
                 onChangeText={(text) => setPassword(text)}
               />
             </View>
-            <View style={styles.inputView}>
-              <TextInput
-                secureTextEntry
-                placeholder="Confirm password...."
-                defaultValue={confirmPassword}
-                placeholderTextColor={'#abae94'}
-                style={styles.inputText}
-                onChangeText={(text) => setConfirmPassword(text)}
-              />
-            </View>
-            <Pressable
-              style={styles.loginButton}
-              onPress={() => checkRegister()}>
-              <Text style={styles.loginText}>REGISTER</Text>
-            </Pressable>
             <Pressable
               style={styles.forgot}
-              onPress={() => navigation.goBack()}>
-              <Text style={styles.forgot}>
-                already has an account?
-                {
-                  <Text style={{fontWeight: 'bold', fontSize: 14}}>
-                    {' '}
-                    Login{' '}
-                  </Text>
-                }
-              </Text>
+              onPress={() => navigation.navigate('ForgotPassword')}>
+              <Text style={styles.forgot}>forgot password?</Text>
+            </Pressable>
+            <Pressable style={styles.loginButton} onPress={() => checkLogin()}>
+              <Text style={styles.loginText}>LOGIN</Text>
+            </Pressable>
+            <Pressable
+              style={styles.registerButton}
+              onPress={() => navigation.navigate('Register')}>
+              <Text style={styles.loginText}>REGISTER</Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -183,9 +157,9 @@ const styles = StyleSheet.create({
   },
   logo: {
     fontWeight: 'bold',
-    fontSize: 50,
+    fontSize: 40,
     color: 'white',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   inputView: {
     width: '80%',
@@ -204,7 +178,6 @@ const styles = StyleSheet.create({
   forgot: {
     color: 'white',
     fontSize: 11,
-    paddingTop: 20,
   },
   loginButton: {
     width: '80%',

@@ -38,7 +38,8 @@
     "react-native-screens": "^2.9.0",
     "react-native-vector-icons": "^7.0.0",
     "react-navigation": "^4.4.0",
-    "rn-fetch-blob": "github:joltup/rn-fetch-blob#master"
+    "rn-fetch-blob": "github:joltup/rn-fetch-blob#master",
+    "rn-placeholder": "^3.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.11.0",
