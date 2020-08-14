@@ -22,7 +22,9 @@ export default function HeaderTab({navigation, NameTab}) {
           }}>
           <Icon name="home" size={35} color="#fff" marginTop={5} />
         </Pressable>
-        <Text style={{color:'#fff',fontWeight:"bold",fontSize:20}}>{NameTab ? NameTab : null}</Text>
+        <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 20}}>
+          {NameTab ? NameTab : null}
+        </Text>
         <Pressable
           style={{margin: 5}}
           onPress={() => {
@@ -44,14 +46,16 @@ export default function HeaderTab({navigation, NameTab}) {
             <Text style={styles.modalText}>
               CÔNG TY TNHH LIÊN DOANH PHẦN MỀM AKB SOFTWARE
             </Text>
-            <Text>
-              Địa chỉ: Số 15, ngõ 64 Lê Trọng Tấn, Thanh Xuân, Hà Nội{' '}
-            </Text>
-            <Text> PostCode: 11411</Text>
-            <Text> Email: info@akb.com.vn</Text>
-            <Text> Tel: (+84 24) 3787 7529</Text>
-            <Text> Fax: (+84 24) 3787 7533</Text>
-            <Text> TaxCode: 0102637341</Text>
+            <View style={{flexDirection: 'column'}}>
+              <Text style={{paddingLeft:3}}>
+                Địa chỉ: Số 15, ngõ 64 Lê Trọng Tấn, Thanh Xuân, Hà Nội{' '}
+              </Text>
+              <Text> PostCode: 11411</Text>
+              <Text> Email: info@akb.com.vn</Text>
+              <Text> Tel: (+84 24) 3787 7529</Text>
+              <Text> Fax: (+84 24) 3787 7533</Text>
+              <Text> TaxCode: 0102637341</Text>
+            </View>
             <Pressable
               style={{
                 ...styles.openButton,

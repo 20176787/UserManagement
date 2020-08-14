@@ -81,37 +81,14 @@ export default function InformationScreen({navigation}) {
         <Pressable
           onPress={() => {
             setModalVisible(true);
-            return (
-              <Modal
-                visible={modalVisible}
-                transparent={true}
-                onRequestClose={() => setModalVisible(false)}>
-                <Pressable
-                  onPress={() => setModalVisible(false)}
-                  style={{position: 'absolute'}}>
-                  <Icon name="cancel" size={30} color="#fff" marginTop={5} />
-                </Pressable>
-                <ImageViewer
-                  imageUrls={[
-                    {
-                      props: {},
-                      url: data.avatar_url,
-                    },
-                  ]}
-                  index={0}
-                  onSwipeDown={() => {
-                    setModalVisible(false);
-                  }}
-                  onMove={(data) => console.log(data)}
-                  enableSwipeDown={true}
-                  style={{zIndex: -1}}
-                />
-              </Modal>
-            );
           }}>
           <Image
             style={styles.imageAvatar}
-            source={{uri: data.avatar_url} || null}
+            source={
+              data.avatar_url != null
+                ? {uri: data.avatar_url}
+                : require('../../store/img/logo.png')
+            }
           />
         </Pressable>
         <Text style={{fontSize: 20, fontWeight: 'bold', color: 'red'}}>
@@ -182,6 +159,36 @@ export default function InformationScreen({navigation}) {
           </Pressable>
         </View>
       </ScrollView>
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}>
+        <Pressable
+          onPress={() => setModalVisible(false)}
+          style={{position: 'absolute', padding: 10}}>
+          <Icon name="cancel" size={30} color="#fff" marginTop={5} />
+        </Pressable>
+        <ImageViewer
+          imageUrls={[
+            {
+              props: {
+                source:
+                  data.avatar_url == null
+                    ? require('../../store/img/logo.png')
+                    : null,
+              },
+              url: data.avatar_url,
+            },
+          ]}
+          index={0}
+          onSwipeDown={() => {
+            setModalVisible(false);
+          }}
+          onMove={(data) => console.log(data)}
+          enableSwipeDown={true}
+          style={{zIndex: -1}}
+        />
+      </Modal>
     </SafeAreaView>
   );
 }

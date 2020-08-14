@@ -9,74 +9,23 @@ import {
   RefreshControl,
   Pressable,
 } from 'react-native';
-import HeaderTab from '../shared/HeaderTab';
+import HeaderTab from '../../shared/HeaderTab';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
-import {path} from '../../App';
+import {path} from '../../../App';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
 };
-export default function ListUserScreen({user}) {
+export default function ListUserScreen({route, navigation}) {
+  const {user} = route.params;
   const [data, setData] = useState();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
     wait(2000).then(() => setRefreshing(false));
   }, []);
-  const dataTest = [
-    {
-      name: 'huy',
-      phone: '0366543543543',
-      email: 'huy@gmail.com',
-    },
-    {
-      name: 'huy',
-      phone: '0366543543543',
-      email: 'huy@gmail.com',
-    },
-    {
-      name: 'huy',
-      phone: '0366543543543',
-      email: 'huy@gmail.com',
-    },
-    {
-      name: 'huy',
-      phone: '0366543543543',
-      email: 'huy@gmail.com',
-    },
-    {
-      name: 'huy',
-      phone: '0366543543543',
-      email: 'huy@gmail.com',
-    },
-    {
-      name: 'huy',
-      phone: '0366543543543',
-      email: 'huy@gmail.com',
-    },
-    {
-      name: 'huy',
-      phone: '0366543543543',
-      email: 'huy@gmail.com',
-    },
-    {
-      name: 'huy',
-      phone: '0366543543543',
-      email: 'huy@gmail.com',
-    },
-    {
-      name: 'huy',
-      phone: '0366543543543',
-      email: 'huy@gmail.com',
-    },
-    {
-      name: 'huy',
-      phone: '0366543543543',
-      email: 'huy@gmail.com',
-    },
-  ];
   useEffect(() => {
     const getData = () => {
       try {
@@ -96,14 +45,14 @@ export default function ListUserScreen({user}) {
         throw error;
       }
     };
-    // navigation.addListener('focus', () => getData());
+    navigation.addListener('focus', () => getData());
   }, []);
   return (
     <SafeAreaView>
-      <HeaderTab NameTab={'LIST USER'} />
+      <HeaderTab NameTab={'LIST USER'} navigation={navigation} />
       <FlatList
         style={{height: '100%', margin: 10}}
-        data={dataTest}
+        data={data}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -124,7 +73,11 @@ export default function ListUserScreen({user}) {
               }}>
               <Image
                 style={styles.imageAvatar}
-                source={require('../store/img/logo.png')}
+                source={
+                  item.avatar_url != null
+                    ? {uri: item.avatar_url}
+                    : require('../../store/img/logo.png')
+                }
               />
               <View style={{paddingLeft: 20}}>
                 <Text>{item.name}</Text>
@@ -158,7 +111,7 @@ const styles = StyleSheet.create({
     borderColor: '#ff2929',
     overflow: 'hidden',
     // marginTop: '20%',
-    borderWidth: 5,
+    borderWidth: 2,
   },
   modalView: {
     margin: 20,

@@ -1,5 +1,11 @@
-import React, {useEffect, useState} from 'react';
-import {View, StyleSheet} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  SafeAreaView,
+} from 'react-native';
 import {
   Avatar,
   Title,
@@ -15,12 +21,23 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import RNFetchBlob from 'rn-fetch-blob/index';
 import AsyncStorage from '@react-native-community/async-storage';
 import {AuthContext, path} from '../../App';
+import Modal from 'react-native-modal';
+const wait = (timeout) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
 export default function DrawerContent(props) {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const {signOut} = React.useContext(AuthContext);
   const toggleTheme = () => {
     setIsDarkTheme(!isDarkTheme);
   };
+  const [modalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(() => {
+    wait(2000).then(() => setRefreshing(false));
+  }, []);
   const [user, setUser] = useState();
   const [isFocus, setIsFocus] = useState(false);
   const [data, setData] = useState({});
@@ -54,7 +71,9 @@ export default function DrawerContent(props) {
             <View style={{flexDirection: 'row', marginTop: 15}}>
               <Avatar.Image
                 source={
-                  {uri: data.avatar_url} || require('../store/img/logo.png')
+                  data.avatar_url != null
+                    ? {uri: data.avatar_url}
+                    : require('../store/img/logo.png')
                 }
                 size={50}
               />
@@ -135,10 +154,14 @@ export default function DrawerContent(props) {
           )}
           label="Sign Out"
           onPress={() => {
+            setModalVisible(true);
+            setRefreshing(true);
             RNFetchBlob.fetch('GET', `${path}/api/auth/logout/`, {
               Authorization: user.access_token,
             })
               .then(() => {
+                setModalVisible(false);
+                setRefreshing(false);
                 console.log('logout success');
                 AsyncStorage.removeItem('AuthUser');
                 signOut();
@@ -150,6 +173,15 @@ export default function DrawerContent(props) {
           }}
         />
       </Drawer.Section>
+      <Modal
+        isVisible={modalVisible}
+        onBackdropPress={() => setModalVisible(false)}>
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+      </Modal>
     </View>
   );
 }

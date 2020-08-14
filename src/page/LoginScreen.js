@@ -59,8 +59,8 @@ export default function LoginScreen({navigation}) {
           Alert.alert('WARRING', 'phone number or password not true');
           setModalVisible(false);
           setRefreshing(false);
-          // setPassword(null);
-          setPhone(null);
+          setPassword(null);
+          // setPhone(null);
         }
       })
       .catch((err) => {
@@ -69,10 +69,10 @@ export default function LoginScreen({navigation}) {
   };
   const checkLogin = () => {
     if (phone == null) {
-      Alert.alert('please enter your phone');
+      Alert.alert('WARRING', 'please enter your phone');
       setPassword(null);
     } else if (password == null || password.length < 6) {
-      Alert.alert('please enter your password with length > 6');
+      Alert.alert('WARRING', 'please enter your password with length > 6');
       setPassword(null);
     } else {
       onSignIn();

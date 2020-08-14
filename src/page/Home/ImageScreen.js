@@ -73,17 +73,19 @@ export default function ImageScreen({route, navigation}) {
         return dataImg;
     }
   }, []);
-  const createTwoButtonAlert = ({item}) =>
+  const createTwoButtonAlert = () =>
     Alert.alert(
       'Warring ',
       'Do you want to delete this images?',
       [
         {
           text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
+          onPress: () => {
+            setSelected({type: 'reset'});
+          },
           style: 'cancel',
         },
-        {text: 'OK', onPress: () => deleteImage({item})},
+        {text: 'OK', onPress: () => multiDeleteImage()},
       ],
       {cancelable: false},
     );
@@ -132,33 +134,31 @@ export default function ImageScreen({route, navigation}) {
     };
     navigation.addListener('focus', () => {
       getData();
-      console.log('after insert ', dataImg);
     });
-    // dataImg.map((i) => setDataImg({type: 'remove', value: i}));
   }, []);
-  const deleteImage = async ({item}) => {
-    setDataImg({
-      type: 'remove',
-      value: item.id,
-    });
-    setImgs({
-      type: 'remove',
-      value: item.id,
-    });
-    try {
-      RNFetchBlob.fetch('GET', `${path}/api/auth/deleteImage/${item.id}`, {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + user.access_token,
-      })
-        .then((res) => {
-          console.log(res.data);
-        })
-        .catch((error) => console.log(error));
-    } catch (error) {
-      AsyncStorage.removeItem('AuthUser');
-      throw error;
-    }
-  };
+  // const deleteImage = async ({item}) => {
+  //   setDataImg({
+  //     type: 'remove',
+  //     value: item.id,
+  //   });
+  //   setImgs({
+  //     type: 'remove',
+  //     value: item.id,
+  //   });
+  //   try {
+  //     RNFetchBlob.fetch('GET', `${path}/api/auth/deleteImage/${item.id}`, {
+  //       'Content-Type': 'application/json',
+  //       Authorization: 'Bearer ' + user.access_token,
+  //     })
+  //       .then((res) => {
+  //         console.log(res.data);
+  //       })
+  //       .catch((error) => console.log(error));
+  //   } catch (error) {
+  //     AsyncStorage.removeItem('AuthUser');
+  //     throw error;
+  //   }
+  // };
   const multiDeleteImage = async () => {
     console.log(selected);
     selected.map((i) => {
@@ -205,7 +205,9 @@ export default function ImageScreen({route, navigation}) {
           <Image
             style={styles.imageAvatar}
             source={
-              {uri: data.avatar_url} || require('../../store/img/logo.png')
+              data.avatar_url != null
+                ? {uri: data.avatar_url}
+                : require('../../store/img/logo.png')
             }
           />
           <Text style={{fontSize: 20, fontWeight: 'bold', color: 'red'}}>
@@ -213,6 +215,7 @@ export default function ImageScreen({route, navigation}) {
           </Text>
         </View>
       </View>
+      {/*{dataImg[0] != undefined ? (*/}
       <FlatList
         style={{height: '56%', margin: 10}}
         data={dataImg}
@@ -233,7 +236,10 @@ export default function ImageScreen({route, navigation}) {
                 onPress={() => {
                   selected.map((i) => {
                     if (i.id == item.id) {
-                      setSelected({type: 'remove', value: item.id});
+                      setSelected({
+                        type: 'remove',
+                        value: item.id,
+                      });
                     }
                   });
                   if (selected[0] == undefined) {
@@ -249,9 +255,11 @@ export default function ImageScreen({route, navigation}) {
                     }
                   });
                   if (check == 1) {
-                    setSelected({type: 'add', value: {id: item.id}});
+                    setSelected({
+                      type: 'add',
+                      value: {id: item.id, url: item.uri},
+                    });
                   }
-                  console.log('fsdfsdfsdfsd');
                 }}>
                 {selected.map((i) => {
                   if (i.id == item.id) {
@@ -261,6 +269,7 @@ export default function ImageScreen({route, navigation}) {
                         style={{position: 'absolute'}}
                         name="check-box"
                         size={30}
+                        key={item.id}
                         color="green"
                         marginTop={5}
                       />
@@ -278,11 +287,6 @@ export default function ImageScreen({route, navigation}) {
                 <Text style={{color: '#646363', fontSize: 14, paddingTop: 5}}>
                   {moment(item.time).format('LLLL')}
                 </Text>
-                {/*<Pressable*/}
-                {/*  style={{}}*/}
-                {/*  onPress={() => createTwoButtonAlert({item})}>*/}
-                {/*  <Icon name="cancel" size={30} color="black" marginTop={5} />*/}
-                {/*</Pressable>*/}
               </View>
             </View>
           );
@@ -291,7 +295,7 @@ export default function ImageScreen({route, navigation}) {
       />
       {selected[0] != undefined ? (
         <Pressable
-          onPress={multiDeleteImage}
+          onPress={createTwoButtonAlert}
           style={{
             backgroundColor: 'red',
             alignSelf: 'center',
@@ -309,7 +313,7 @@ export default function ImageScreen({route, navigation}) {
         onRequestClose={() => setModalVisible(false)}>
         <Pressable
           onPress={() => setModalVisible(false)}
-          style={{position: 'absolute'}}>
+          style={{position: 'absolute', padding: 10}}>
           <Icon name="cancel" size={30} color="#fff" marginTop={5} />
         </Pressable>
         <ImageViewer

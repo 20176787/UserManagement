@@ -1,4 +1,4 @@
-import React, {useEffect, useReducer, useState} from 'react';
+import React, {useCallback, useEffect, useReducer, useState} from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Alert,
   Modal,
+  RefreshControl,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob/index';
 import ImagePicker from 'react-native-image-crop-picker/index';
@@ -24,13 +25,21 @@ import ImageResizer from 'react-native-image-resizer';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import HeaderUploadImageTab from '../../shared/HeaderUploadImageTab';
 const {width, height} = Dimensions.get('window');
-
+const wait = (timeout) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
 export default function UploadImageScreen({route, navigation}) {
   const {user} = route.params;
   const {data} = route.params;
   const [resizeImageUri, setResizedImageUri] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(() => {
+    wait(2000).then(() => setRefreshing(false));
+  }, []);
   const [datas, setDatas] = useReducer((datas, {type, value}) => {
     switch (type) {
       case 'add':
@@ -62,6 +71,7 @@ export default function UploadImageScreen({route, navigation}) {
     }
   }, []);
   const onUploadImage = async () => {
+    setRefreshing(true);
     imgs[0] != undefined
       ? RNFetchBlob.fetch(
           'POST',
@@ -78,19 +88,17 @@ export default function UploadImageScreen({route, navigation}) {
           .then((res) => {
             console.log('success upLoad');
             cleanupImages();
+            setRefreshing(false);
             imgs.map((i) => setImgs({type: 'remove', value: i}));
             datas.map((i) => setDatas({type: 'remove', value: i}));
             navigation.navigate('Images');
           })
           .catch((error) => console.log(error))
-      : Alert.alert('No image selected');
+      : Alert.alert('WARRING', 'No image selected');
   };
   const cleanupImages = () => {
     ImagePicker.clean()
-      .then(() => {
-        // console.log('removed tmp images from tmp directory');
-        alert('Temporary images history cleared');
-      })
+      .then(() => {})
       .catch((e) => {
         alert(e);
       });
@@ -148,27 +156,6 @@ export default function UploadImageScreen({route, navigation}) {
       })
       .catch((e) => alert(e));
   };
-  const resize = ({image}) => {
-    ImageResizer.createResizedImage(
-      image.path,
-      image.width * 0.3,
-      image.height * 0.3,
-      'JPEG',
-      40,
-    )
-      .then(({uri}) => {
-        setResizedImageUri(uri);
-        console.log('uri', uri);
-        return uri;
-      })
-      .catch((err) => {
-        console.log(err);
-        return Alert.alert(
-          'Unable to resize the photo',
-          'Check the console for full the error message',
-        );
-      });
-  };
   return (
     <SafeAreaView>
       <View>
@@ -179,7 +166,11 @@ export default function UploadImageScreen({route, navigation}) {
         />
         <Image
           style={styles.imageAvatar}
-          source={{uri: data.avatar_url} || require('../../store/img/logo.png')}
+          source={
+            data.avatar_url != null
+              ? {uri: data.avatar_url}
+              : require('../../store/img/logo.png')
+          }
         />
         <Text
           style={{
@@ -194,6 +185,9 @@ export default function UploadImageScreen({route, navigation}) {
           <FlatList
             data={imgs}
             style={{height: '45%', margin: 10}}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
             numColumns={1}
             renderItem={({item, index}) => (
               <View>

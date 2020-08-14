@@ -17,7 +17,7 @@ import LoginScreen from './src/page/LoginScreen';
 import RegisterScreen from './src/page/RegisterScreen';
 import ForgotPasswordScreen from './src/page/ForgotPasswordScreen';
 export const AuthContext = React.createContext();
-export const path = 'http://368e1b578b07.ngrok.io';
+export const path = 'http://ad6358f65535.ngrok.io';
 const Stack = createStackNavigator();
 export default function App({navigation}) {
   const [state, dispatch] = React.useReducer(

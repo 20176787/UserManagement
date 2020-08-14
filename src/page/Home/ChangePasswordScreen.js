@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,18 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
+  ScrollView,
+  Alert,
+  RefreshControl,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import HeaderTab from '../../shared/HeaderTab';
 import {path} from '../../../App';
+const wait = (timeout) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
 export default function ChangePasswordScreen({route, navigation}) {
   const [oldPassword, setOldPassword] = useState();
   const [newPassword, setNewPassword] = useState();
@@ -21,11 +29,16 @@ export default function ChangePasswordScreen({route, navigation}) {
     new_password: newPassword,
     new_password_confirmation: confirmNewPassword,
   };
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(() => {
+    wait(2000).then(() => setRefreshing(false));
+  }, []);
   const {user} = route.params;
   const {data} = route.params;
   console.log(data);
   const onUpdate = async () => {
     console.log('update', data_password_change);
+    setRefreshing(true);
     await RNFetchBlob.fetch(
       'POST',
       `${path}/api/auth/change_password`,
@@ -36,8 +49,19 @@ export default function ChangePasswordScreen({route, navigation}) {
       JSON.stringify(data_password_change),
     )
       .then((res) => {
-        console.log('success update');
-        navigation.navigate('Home');
+          setRefreshing(false);
+        console.log(JSON.parse(res.data).message);
+        if (JSON.parse(res.data).message === 'Password updated successfully.') {
+          setOldPassword(null);
+          setNewPassword(null);
+          setConfirmNewPassword(null);
+          navigation.navigate('Home');
+        } else {
+          setOldPassword(null);
+          setNewPassword(null);
+          setConfirmNewPassword(null);
+          Alert.alert('WARRING', `${JSON.parse(res.data).message}`);
+        }
       })
       .catch((error) => console.log(error));
   };
@@ -45,72 +69,84 @@ export default function ChangePasswordScreen({route, navigation}) {
     <SafeAreaView>
       <HeaderTab navigation={navigation} NameTab={'CHANGE PASSWORD'} />
       <KeyboardAvoidingView
-        style={{justifyContent: 'center', height: '80%'}}
+        style={{justifyContent: 'center'}}
         behavior="padding">
-        <View style={{padding: 10}}>
-          <Image
-            style={styles.imageAvatar}
-            source={{uri: data.avatar_url} || null}
-          />
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: 'bold',
-              color: 'red',
-              alignSelf: 'center',
-              padding: 20,
-            }}>
-            {data.name}
-          </Text>
-          <View>
-            <Text>Old Password</Text>
-            <TextInput
-              secureTextEntry
-              placeholder="name"
-              placeholderTextColor={'#abae94'}
-              onChangeText={(text) => setOldPassword(text)}
-              style={styles.input}
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          <View style={{padding: 10}}>
+            <Image
+              style={styles.imageAvatar}
+              source={
+                data.avatar_url != null
+                  ? {uri: data.avatar_url}
+                  : require('../../store/img/logo.png')
+              }
             />
-          </View>
-          <View>
-            <Text>New Password</Text>
-            <TextInput
-              secureTextEntry
-              placeholder="address"
-              placeholderTextColor={'#abae94'}
-              onChangeText={(text) => setNewPassword(text)}
-              style={styles.input}
-            />
-          </View>
-          <View>
-            <Text>Confirm New Password</Text>
-            <TextInput
-              secureTextEntry
-              placeholder="Date of Birth"
-              placeholderTextColor={'#abae94'}
-              onChangeText={(text) => setConfirmNewPassword(text)}
-              style={styles.input}
-            />
-          </View>
-          <Pressable
-            style={{
-              alignSelf: 'center',
-              backgroundColor: 'red',
-              borderRadius: 15,
-              marginTop: 20,
-            }}
-            onPress={() => onUpdate()}>
             <Text
               style={{
-                margin: 10,
                 fontSize: 20,
                 fontWeight: 'bold',
-                color: '#fff',
+                color: 'red',
+                alignSelf: 'center',
+                padding: 20,
               }}>
-              UPDATE
+              {data.name}
             </Text>
-          </Pressable>
-        </View>
+            <View>
+              <Text style={{fontWeight: 'bold'}}>Old Password</Text>
+              <TextInput
+                secureTextEntry
+                placeholder="old password"
+                defaultValue={oldPassword}
+                placeholderTextColor={'#abae94'}
+                onChangeText={(text) => setOldPassword(text)}
+                style={styles.input}
+              />
+            </View>
+            <View>
+              <Text style={{fontWeight: 'bold'}}>New Password</Text>
+              <TextInput
+                secureTextEntry
+                placeholder="new password"
+                defaultValue={newPassword}
+                placeholderTextColor={'#abae94'}
+                onChangeText={(text) => setNewPassword(text)}
+                style={styles.input}
+              />
+            </View>
+            <View>
+              <Text style={{fontWeight: 'bold'}}>New Password Confirm</Text>
+              <TextInput
+                secureTextEntry
+                placeholder="new password confirm"
+                defaultValue={confirmNewPassword}
+                placeholderTextColor={'#abae94'}
+                onChangeText={(text) => setConfirmNewPassword(text)}
+                style={styles.input}
+              />
+            </View>
+            <Pressable
+              style={{
+                alignSelf: 'center',
+                backgroundColor: 'red',
+                borderRadius: 15,
+                marginTop: 20,
+              }}
+              onPress={() => onUpdate()}>
+              <Text
+                style={{
+                  margin: 10,
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: '#fff',
+                }}>
+                UPDATE
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

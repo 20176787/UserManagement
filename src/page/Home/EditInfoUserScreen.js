@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Dimensions,
+  RefreshControl,
+  FlatList,
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker/index';
 import RNFetchBlob from 'rn-fetch-blob/index';
@@ -19,7 +21,14 @@ import Modal from 'react-native-modal';
 import moment from 'moment';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import HeaderUploadImageTab from "../../shared/HeaderUploadImageTab";
+import Icon1 from 'react-native-vector-icons/FontAwesome';
+import HeaderUploadImageTab from '../../shared/HeaderUploadImageTab';
+import ImageViewer from 'react-native-image-zoom-viewer';
+const wait = (timeout) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
 export default function EditInfoUserScreen({navigation, route}) {
   const {width, height} = Dimensions.get('window');
   const {data} = route.params;
@@ -31,6 +40,7 @@ export default function EditInfoUserScreen({navigation, route}) {
   const [avtUri, setAvtUri] = useState();
   const [avatar_url, setAvatar_url] = useState();
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisibleAvatar, setModalVisibleAvatar] = useState(false);
   const [date, setDate] = useState(new Date(1598051730000));
   const [mode, setMode] = useState('date');
   const [show, setShow] = useState(false);
@@ -40,6 +50,11 @@ export default function EditInfoUserScreen({navigation, route}) {
     birth,
     email,
   };
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    wait(2000).then(() => setRefreshing(false));
+  }, []);
   const onUploadImage = async () => {
     await RNFetchBlob.fetch(
       'POST',
@@ -82,6 +97,7 @@ export default function EditInfoUserScreen({navigation, route}) {
   }
   const onUpdate = async () => {
     console.log('update', useData);
+    setRefreshing(true);
     if (avtUri != null) {
       await onUploadImage();
     }
@@ -96,6 +112,7 @@ export default function EditInfoUserScreen({navigation, route}) {
     )
       .then((res) => {
         console.log('success update');
+        setRefreshing(false);
         navigation.navigate('Home');
       })
       .catch((error) => console.log(error));
@@ -117,19 +134,34 @@ export default function EditInfoUserScreen({navigation, route}) {
   };
   return (
     <SafeAreaView>
-      <HeaderUploadImageTab navigation={navigation} NameTab={'UPDATE PROFILE'} user={user} />
-      <ScrollView>
+      <HeaderUploadImageTab
+        navigation={navigation}
+        NameTab={'UPDATE PROFILE'}
+        user={user}
+      />
         <KeyboardAvoidingView
-          style={{justifyContent: 'center', height: '100%'}}
+          style={{justifyContent: 'center'}}
           behavior="padding">
+          <ScrollView
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }>
           <View style={{padding: 10}}>
-            <Image
-              style={styles.imageAvatar}
-              source={
-                avtUri || {uri: data.avatar_url} ||
-                require('../../store/img/logo.png')
-              }
-            />
+            <Pressable
+              onPress={() => {
+                setModalVisibleAvatar(true);
+              }}>
+              <Image
+                style={styles.imageAvatar}
+                source={
+                  avtUri != null
+                    ? avtUri
+                    : data.avatar_url != null
+                    ? {uri: data.avatar_url}
+                    : require('../../store/img/logo.png')
+                }
+              />
+            </Pressable>
             <Pressable
               onPress={() => {
                 setModalVisible(true);
@@ -163,12 +195,12 @@ export default function EditInfoUserScreen({navigation, route}) {
               </Text>
             </View>
             <View>
-              <Text style={styles.textLabel}>Address</Text>
+              <Text style={styles.textLabel}>Email</Text>
               <TextInput
-                placeholder="address"
+                placeholder="email"
                 placeholderTextColor={'#abae94'}
-                defaultValue={data.address}
-                onChangeText={(text) => setAddress(text)}
+                defaultValue={data.email}
+                onChangeText={(text) => setEmail(text)}
                 style={styles.input}
               />
             </View>
@@ -176,14 +208,20 @@ export default function EditInfoUserScreen({navigation, route}) {
               <Text style={styles.textLabel}>Date of Birth</Text>
               <View>
                 <Pressable style={{}} onPress={showDatepicker}>
-                  <View style={{flexDirection: 'row',justifyContent:'space-between',paddingTop:10,paddingBottom:10}}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      paddingTop: 10,
+                      paddingBottom: 10,
+                    }}>
                     <View
                       style={{
                         backgroundColor: '#fff',
                         width: width * 0.8,
                         borderRadius: 5,
                       }}>
-                      <Text style={styles.input}>{birth||data.birth}</Text>
+                      <Text style={styles.input}>{birth || data.birth}</Text>
                     </View>
                     <Icon name={'calendar'} size={50} color={'red'} />
                   </View>
@@ -201,12 +239,12 @@ export default function EditInfoUserScreen({navigation, route}) {
               </View>
             </View>
             <View>
-              <Text style={styles.textLabel}>Email</Text>
+              <Text style={styles.textLabel}>Address</Text>
               <TextInput
-                placeholder="email"
+                placeholder="address"
                 placeholderTextColor={'#abae94'}
-                defaultValue={data.email}
-                onChangeText={(text) => setEmail(text)}
+                defaultValue={data.address}
+                onChangeText={(text) => setAddress(text)}
                 style={styles.input}
               />
             </View>
@@ -229,6 +267,7 @@ export default function EditInfoUserScreen({navigation, route}) {
               </Text>
             </Pressable>
           </View>
+          </ScrollView>
         </KeyboardAvoidingView>
         <Modal
           isVisible={modalVisible}
@@ -280,7 +319,6 @@ export default function EditInfoUserScreen({navigation, route}) {
             </Pressable>
           </View>
         </Modal>
-      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -290,7 +328,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: '#fff',
     borderRadius: 5,
-    paddingLeft:2
+    paddingLeft: 2,
   },
   text: {
     fontSize: 14,
