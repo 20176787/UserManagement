@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -18,14 +18,19 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {setAuthUser} from '../shared/OnValueChange';
 import {AuthContext, path} from '../../App';
 import Modal from 'react-native-modal';
+import I18N from "../store/i18n";
 const {width, height} = Dimensions.get('window');
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
 };
-export default function RegisterScreen({navigation}) {
+export default function RegisterScreen({navigation, route}) {
   const {signUp} = React.useContext(AuthContext);
+  const {language} = route.params;
+  const ref_input1 = useRef();
+  const ref_input2 = useRef();
+  const ref_input3 = useRef();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -69,20 +74,12 @@ export default function RegisterScreen({navigation}) {
   const checkRegister = () => {
     if (username == null) {
       Alert.alert('WARRING', 'please enter username');
-      setPassword(null);
-      setConfirmPassword(null);
     } else if (phone == null) {
       Alert.alert('WARRING', 'please enter your phone');
-      setPassword(null);
-      setConfirmPassword(null);
     } else if (password == null || password.length < 6) {
       Alert.alert('WARRING', 'please enter your password with length > 6');
-      setPassword(null);
-      setConfirmPassword(null);
     } else if (password != confirmPassword) {
       Alert.alert('WARRING', 'your confirm password is not correct');
-      setPassword(null);
-      setConfirmPassword(null);
     } else {
       onSignUp();
     }
@@ -103,34 +100,53 @@ export default function RegisterScreen({navigation}) {
             {/*<Text style={styles.logo}>Register</Text>*/}
             <View style={styles.inputView}>
               <TextInput
-                placeholder="Username...."
+                placeholder={`${I18N.get(
+                    'UserName',
+                    language,
+                )}`}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
+                autoFocus={true}
+                onSubmitEditing={() => ref_input1.current.focus()}
                 onChangeText={(text) => setUsername(text)}
               />
             </View>
             <View style={styles.inputView}>
               <TextInput
-                placeholder="phone...."
+                ref={ref_input1}
+                placeholder={`${I18N.get(
+                    'PhoneNumber',
+                    language,
+                )}`}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
                 onChangeText={(text) => setPhone(text)}
+                onSubmitEditing={() => ref_input2.current.focus()}
               />
             </View>
             <View style={styles.inputView}>
               <TextInput
+                ref={ref_input2}
                 secureTextEntry
-                placeholder="password...."
+                placeholder={`${I18N.get(
+                    'Password',
+                    language,
+                )}`}
                 defaultValue={password}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
                 onChangeText={(text) => setPassword(text)}
+                onSubmitEditing={() => ref_input3.current.focus()}
               />
             </View>
             <View style={styles.inputView}>
               <TextInput
                 secureTextEntry
-                placeholder="Confirm password...."
+                ref={ref_input3}
+                placeholder={`${I18N.get(
+                    'PasswordConfirm',
+                    language,
+                )}`}
                 defaultValue={confirmPassword}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
@@ -140,17 +156,26 @@ export default function RegisterScreen({navigation}) {
             <Pressable
               style={styles.loginButton}
               onPress={() => checkRegister()}>
-              <Text style={styles.loginText}>REGISTER</Text>
+              <Text style={styles.loginText}>{`${I18N.get(
+                  'Register',
+                  language,
+              )}`}</Text>
             </Pressable>
             <Pressable
               style={styles.forgot}
               onPress={() => navigation.goBack()}>
               <Text style={styles.forgot}>
-                already has an account?
+                {`${I18N.get(
+                    'HaveAccount',
+                    language,
+                )}`}
                 {
                   <Text style={{fontWeight: 'bold', fontSize: 14}}>
                     {' '}
-                    Login{' '}
+                    {`${I18N.get(
+                        'Login',
+                        language,
+                    )}`}{' '}
                   </Text>
                 }
               </Text>

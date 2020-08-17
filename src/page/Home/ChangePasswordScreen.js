@@ -15,6 +15,7 @@ import {
 import RNFetchBlob from 'rn-fetch-blob';
 import HeaderTab from '../../shared/HeaderTab';
 import {path} from '../../../App';
+import I18N from '../../store/i18n';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -22,6 +23,7 @@ const wait = (timeout) => {
 };
 export default function ChangePasswordScreen({route, navigation}) {
   const [oldPassword, setOldPassword] = useState();
+  const {language} = route.params;
   const [newPassword, setNewPassword] = useState();
   const [confirmNewPassword, setConfirmNewPassword] = useState();
   const data_password_change = {
@@ -49,7 +51,7 @@ export default function ChangePasswordScreen({route, navigation}) {
       JSON.stringify(data_password_change),
     )
       .then((res) => {
-          setRefreshing(false);
+        setRefreshing(false);
         console.log(JSON.parse(res.data).message);
         if (JSON.parse(res.data).message === 'Password updated successfully.') {
           setOldPassword(null);
@@ -67,7 +69,10 @@ export default function ChangePasswordScreen({route, navigation}) {
   };
   return (
     <SafeAreaView>
-      <HeaderTab navigation={navigation} NameTab={'CHANGE PASSWORD'} />
+      <HeaderTab
+        navigation={navigation}
+        NameTab={`${I18N.get('ChangePassword', language)}`}
+      />
       <KeyboardAvoidingView
         style={{justifyContent: 'center'}}
         behavior="padding">
@@ -95,10 +100,13 @@ export default function ChangePasswordScreen({route, navigation}) {
               {data.name}
             </Text>
             <View>
-              <Text style={{fontWeight: 'bold'}}>Old Password</Text>
+              <Text style={{fontWeight: 'bold'}}>{`${I18N.get(
+                'OldPassword',
+                language,
+              )}`}</Text>
               <TextInput
                 secureTextEntry
-                placeholder="old password"
+                placeholder={`${I18N.get('OldPassword', language)}`}
                 defaultValue={oldPassword}
                 placeholderTextColor={'#abae94'}
                 onChangeText={(text) => setOldPassword(text)}
@@ -106,10 +114,13 @@ export default function ChangePasswordScreen({route, navigation}) {
               />
             </View>
             <View>
-              <Text style={{fontWeight: 'bold'}}>New Password</Text>
+              <Text style={{fontWeight: 'bold'}}>{`${I18N.get(
+                'NewPassword',
+                language,
+              )}`}</Text>
               <TextInput
                 secureTextEntry
-                placeholder="new password"
+                placeholder={`${I18N.get('NewPassword', language)}`}
                 defaultValue={newPassword}
                 placeholderTextColor={'#abae94'}
                 onChangeText={(text) => setNewPassword(text)}
@@ -117,10 +128,13 @@ export default function ChangePasswordScreen({route, navigation}) {
               />
             </View>
             <View>
-              <Text style={{fontWeight: 'bold'}}>New Password Confirm</Text>
+              <Text style={{fontWeight: 'bold'}}>{`${I18N.get(
+                'NewPasswordConfirm',
+                language,
+              )}`}</Text>
               <TextInput
                 secureTextEntry
-                placeholder="new password confirm"
+                placeholder={`${I18N.get('NewPasswordConfirm', language)}`}
                 defaultValue={confirmNewPassword}
                 placeholderTextColor={'#abae94'}
                 onChangeText={(text) => setConfirmNewPassword(text)}
@@ -142,7 +156,7 @@ export default function ChangePasswordScreen({route, navigation}) {
                   fontWeight: 'bold',
                   color: '#fff',
                 }}>
-                UPDATE
+                {`${I18N.get('Update', language)}`}
               </Text>
             </Pressable>
           </View>

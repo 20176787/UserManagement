@@ -4,7 +4,7 @@ import {DrawerActions} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Entypo';
 import Icon1 from 'react-native-vector-icons/MaterialIcons';
 import Modal from 'react-native-modal';
-export default function HeaderImageTab({navigation, NameTab, user, data}) {
+export default function HeaderImageTab({navigation, NameTab, user, data,language}) {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <View>
@@ -12,7 +12,7 @@ export default function HeaderImageTab({navigation, NameTab, user, data}) {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          marginBottom: 20,
+          marginBottom: 10,
           justifyContent: 'space-between',
           backgroundColor: 'red',
         }}>
@@ -21,7 +21,7 @@ export default function HeaderImageTab({navigation, NameTab, user, data}) {
           onPress={() => {
             navigation.dispatch(DrawerActions.openDrawer());
           }}>
-          <Icon name="home" size={35} color="#fff" marginTop={5} />
+          <Icon name="menu" size={35} color="#fff" marginTop={5} />
         </Pressable>
         <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 20}}>
           {NameTab ? NameTab : null}
@@ -29,7 +29,7 @@ export default function HeaderImageTab({navigation, NameTab, user, data}) {
         <Pressable
           style={{margin: 5}}
           onPress={() => {
-            navigation.navigate('UploadImage', {user: user, data: data});
+            navigation.navigate('UploadImage', {user: user, data: data,language:language});
           }}>
           <Icon1 name={'add-box'} size={35} color={'#fff'}/>
         </Pressable>

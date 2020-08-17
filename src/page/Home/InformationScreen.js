@@ -12,30 +12,69 @@ import {
   KeyboardAvoidingView,
   RefreshControl,
   Alert,
-  Modal,
+  Modal as Model1,
+  TextInput,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
 import {path} from '../../../App';
 import HeaderTab from '../../shared/HeaderTab';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Modal from 'react-native-modal';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon1 from 'react-native-vector-icons/MaterialIcons';
 import ImageViewer from 'react-native-image-zoom-viewer';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import moment from 'moment';
+import ImagePicker from 'react-native-image-crop-picker/index';
+import ViewAvatar from '../../shared/ViewAvatar';
+import I18N from '../../store/i18n';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
 };
-export default function InformationScreen({navigation}) {
+export default function InformationScreen({navigation, route}) {
   const [user, setUser] = useState();
-  const [modalVisible, setModalVisible] = useState(false);
+  const [language, setLanguage] = useState();
   const [data, setData] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const {width, height} = Dimensions.get('window');
+  const [name, setName] = useState();
+  const [address, setAddress] = useState();
+  const [birth, setBirth] = useState();
+  const [email, setEmail] = useState();
+  const [avtUri, setAvtUri] = useState();
+  const [avatar_url, setAvatar_url] = useState();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisibleAvatar, setModalVisibleAvatar] = useState(false);
+  const [date, setDate] = useState(new Date(1598051730000));
+  const [mode, setMode] = useState('date');
+  const [show, setShow] = useState(false);
+  const useData = {
+    name,
+    address,
+    birth,
+    email,
+  };
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     wait(2000).then(() => setRefreshing(false));
   }, []);
   useEffect(() => {
+    const getLang = () => {
+      AsyncStorage.getItem('Language').then((str) => {
+        if (!str) {
+          setLanguage(null);
+        }
+        try {
+          moment.locale('vi');
+          setLanguage(JSON.parse(str));
+        } catch (error) {
+          AsyncStorage.removeItem('AuthUser');
+          throw error;
+        }
+      });
+    };
     const getData = () => {
       setRefreshing(true);
       AsyncStorage.getItem('AuthUser').then((str) => {
@@ -60,8 +99,85 @@ export default function InformationScreen({navigation}) {
         }
       });
     };
-    navigation.addListener('focus', () => getData());
+      getLang();
+      getData();
   }, []);
+  const onUploadImage = async () => {
+    await RNFetchBlob.fetch(
+      'POST',
+      `${path}/api/auth/fileUpload/avatar`,
+      {
+        'Content-Type': 'multipart/form-data',
+        Authorization: 'Bearer ' + user.access_token,
+      },
+
+      [
+        {
+          name: `${moment().utcOffset('+07:00')}`,
+          filename: `${moment().utcOffset('+07:00')}.jpg`,
+          data: RNFetchBlob.wrap(avtUri.uri || null),
+        },
+      ],
+    )
+      .uploadProgress((written, total) => {
+        console.log('uploaded', written / total);
+      })
+      .then((res) => {
+        console.log('success upLoad');
+        setAvatar_url(path + '/file/' + baseName(avtUri.uri || null));
+        cleanupImages();
+      })
+      .catch((error) => console.log(error));
+  };
+  const cleanupImages = () => {
+    ImagePicker.clean()
+      .then(() => {
+        // console.log('removed tmp images from tmp directory');
+      })
+      .catch((e) => {
+        alert(e);
+      });
+  };
+  function baseName(str) {
+    var base = new String(str).substring(str.lastIndexOf('/') + 1);
+    return base;
+  }
+  const onUpdate = async () => {
+    console.log('update', useData);
+    setRefreshing(true);
+    if (avtUri != null) {
+      await onUploadImage();
+    }
+    await RNFetchBlob.fetch(
+      'PUT',
+      `${path}/api/auth/update/${data.id}`,
+      {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + user.access_token,
+      },
+      JSON.stringify(useData),
+    )
+      .then((res) => {
+        console.log('success update');
+        setRefreshing(false);
+      })
+      .catch((error) => console.log(error));
+  };
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShow(Platform.OS === 'ios');
+    setBirth(moment(currentDate).format('L'));
+    console.log(moment(date).format('L'));
+  };
+
+  const showMode = (currentMode) => {
+    setShow(true);
+    setMode(currentMode);
+  };
+
+  const showDatepicker = () => {
+    showMode('date');
+  };
   const drawLine = () => {
     return (
       <View
@@ -75,98 +191,212 @@ export default function InformationScreen({navigation}) {
     );
   };
   return (
-    <SafeAreaView style={{height: '100%'}}>
-      <HeaderTab navigation={navigation} NameTab={'INFORMATION'} />
-      <View style={{alignItems: 'center'}}>
-        <Pressable
-          onPress={() => {
-            setModalVisible(true);
-          }}>
-          <Image
-            style={styles.imageAvatar}
-            source={
-              data.avatar_url != null
-                ? {uri: data.avatar_url}
-                : require('../../store/img/logo.png')
-            }
-          />
-        </Pressable>
-        <Text style={{fontSize: 20, fontWeight: 'bold', color: 'red'}}>
-          {data.name}
-        </Text>
-      </View>
-      <ScrollView
-        contentContainerStyle={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
-        <View style={styles.container}>
-          <View
-            style={{
-              borderRadius: 15,
-              backgroundColor: '#ffffff',
-              margin: 30,
-            }}>
-            <View
-              style={{
-                // flexDirection: 'row',
-                // justifyContent: 'space-between',
-                marginLeft: 20,
-                marginRight: 20,
-                marginTop: 10,
-                marginBottom: 10,
+    <SafeAreaView>
+      <HeaderTab
+        navigation={navigation}
+        NameTab={`${I18N.get('Information', language)}`}
+      />
+      <KeyboardAvoidingView
+        style={{justifyContent: 'center'}}
+        behavior="padding">
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          <View style={{padding: 10}}>
+            <Pressable
+              onPress={() => {
+                setModalVisibleAvatar(true);
               }}>
-              <Text style={styles.textLabel}>Full Name</Text>
-              <Text style={styles.textDetail}>{data.name}</Text>
+              <Image
+                style={styles.imageAvatar}
+                source={
+                  avtUri != null
+                    ? avtUri
+                    : data.avatar_url != null
+                    ? {uri: data.avatar_url}
+                    : require('../../store/img/logo.png')
+                }
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                setModalVisible(true);
+              }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: 'red',
+                  alignSelf: 'center',
+                  padding: 20,
+                }}>
+                {`${I18N.get('ChangeAvatar', language)}`}
+              </Text>
+            </Pressable>
+            <View>
+              <Text style={styles.textLabel}>{`${I18N.get('Name', language)}`}</Text>
+              <TextInput
+                placeholder="name"
+                placeholderTextColor={'#abae94'}
+                defaultValue={data.name}
+                onChangeText={(text) => setName(text)}
+                style={styles.input}
+              />
             </View>
-            {drawLine()}
-            <View style={styles.textForm}>
-              <Text style={styles.textLabel}>Email</Text>
-              <Text style={styles.textDetail}>{data.email}</Text>
+            <View>
+              <Text style={styles.textLabel}>{`${I18N.get('PhoneNumber', language)}`}</Text>
+              <Text
+                style={{paddingTop: 10, paddingBottom: 10, color: '#abae94'}}>
+                {data.phone}
+              </Text>
             </View>
-            {drawLine()}
-            <View style={styles.textForm}>
-              <Text style={styles.textLabel}>Phone Number</Text>
-              <Text style={styles.textDetail}>{data.phone}</Text>
+            <View>
+              <Text style={styles.textLabel}>{`${I18N.get('Email', language)}`}</Text>
+              <TextInput
+                placeholder="email"
+                placeholderTextColor={'#abae94'}
+                defaultValue={data.email}
+                onChangeText={(text) => setEmail(text)}
+                style={styles.input}
+              />
             </View>
-            {drawLine()}
-            <View style={styles.textForm}>
-              <Text style={styles.textLabel}>Birth</Text>
-              <Text style={styles.textDetail}>{data.birth}</Text>
+            <View>
+              <Text style={styles.textLabel}>{`${I18N.get('Birth', language)}`}</Text>
+              <View>
+                <Pressable style={{}} onPress={showDatepicker}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      paddingTop: 10,
+                      paddingBottom: 10,
+                    }}>
+                    <View
+                      style={{
+                        backgroundColor: '#fff',
+                        width: width * 0.95,
+                        borderRadius: 5,
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                      }}>
+                      <Text
+                        style={
+                          (styles.input,
+                          {paddingTop: 15, paddingBottom: 15, paddingLeft: 2})
+                        }>
+                        {birth || data.birth}
+                      </Text>
+                      <Icon
+                        name={'calendar'}
+                        size={30}
+                        color={'red'}
+                        style={{padding: 10}}
+                      />
+                    </View>
+                  </View>
+                </Pressable>
+                {show && (
+                  <DateTimePicker
+                    testID="dateTimePicker"
+                    value={date}
+                    mode={mode}
+                    is24Hour={true}
+                    display="default"
+                    onChange={onChange}
+                  />
+                )}
+              </View>
             </View>
-            {drawLine()}
-            <View style={styles.textForm}>
-              <Text style={styles.textLabel}>Address</Text>
-              <Text style={styles.textDetail}>{data.address}</Text>
+            <View>
+              <Text style={styles.textLabel}>{`${I18N.get('Address', language)}`}</Text>
+              <TextInput
+                placeholder="address"
+                placeholderTextColor={'#abae94'}
+                defaultValue={data.address}
+                onChangeText={(text) => setAddress(text)}
+                style={styles.input}
+              />
             </View>
+            <Pressable
+              style={{
+                alignSelf: 'center',
+                backgroundColor: 'red',
+                borderRadius: 15,
+                marginTop: 20,
+              }}
+              onPress={() => onUpdate()}>
+              <Text
+                style={{
+                  margin: 10,
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: '#fff',
+                }}>
+                {`${I18N.get('Update', language)}`}
+              </Text>
+            </Pressable>
           </View>
-          <Pressable
-            onPress={() =>
-              navigation.navigate('EditUser', {
-                data: data,
-                user: user,
-              })
-            }
-            style={{
-              backgroundColor: 'red',
-              alignSelf: 'center',
-              borderRadius: 15,
-              padding: 10,
-            }}>
-            <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 20}}>
-              UPDATE PROFILE
-            </Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-      <Modal
-        visible={modalVisible}
+        </ScrollView>
+        <Modal
+          isVisible={modalVisible}
+          onBackdropPress={() => setModalVisible(false)}>
+          <View style={styles.modalView}>
+            <Pressable
+              style={{backgroundColor: '#868585', borderRadius: 10, margin: 10}}
+              onPress={() =>
+                ImagePicker.openPicker({
+                  width: 300,
+                  height: 400,
+                  cropping: true,
+                }).then((image) => {
+                  setModalVisible(false);
+                  setAvtUri({
+                    uri: image.path,
+                    width: image.width,
+                    height: image.height,
+                    mime: image.mime,
+                  });
+                  console.log(image);
+                })
+              }>
+              <Text style={{fontSize: 15, fontWeight: 'bold', padding: 10}}>
+                Select image from gallery
+              </Text>
+            </Pressable>
+            <Pressable
+              style={{backgroundColor: '#868585', borderRadius: 10, margin: 10}}
+              onPress={() => {
+                ImagePicker.openCamera({
+                  width: 300,
+                  height: 400,
+                  cropping: true,
+                }).then((image) => {
+                  setModalVisible(false);
+                  setAvtUri({
+                    uri: image.path,
+                    width: image.width,
+                    height: image.height,
+                    mime: image.mime,
+                  });
+                  console.log(image);
+                });
+              }}>
+              <Text style={{fontSize: 15, fontWeight: 'bold', padding: 10}}>
+                Select image from camera
+              </Text>
+            </Pressable>
+          </View>
+        </Modal>
+      </KeyboardAvoidingView>
+      <Model1
+        visible={modalVisibleAvatar}
         transparent={true}
-        onRequestClose={() => setModalVisible(false)}>
+        onRequestClose={() => setModalVisibleAvatar(false)}>
         <Pressable
-          onPress={() => setModalVisible(false)}
+          onPress={() => setModalVisibleAvatar(false)}
           style={{position: 'absolute', padding: 10}}>
-          <Icon name="cancel" size={30} color="#fff" marginTop={5} />
+          <Icon1 name="cancel" size={30} color="#fff" marginTop={5} />
         </Pressable>
         <ImageViewer
           imageUrls={[
@@ -182,21 +412,26 @@ export default function InformationScreen({navigation}) {
           ]}
           index={0}
           onSwipeDown={() => {
-            setModalVisible(false);
+            setModalVisibleAvatar(false);
           }}
           onMove={(data) => console.log(data)}
           enableSwipeDown={true}
           style={{zIndex: -1}}
         />
-      </Modal>
+      </Model1>
     </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
-  container: {
-    // alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
+  input: {
+    marginTop: 15,
+    marginBottom: 10,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    paddingLeft: 2,
+  },
+  text: {
+    fontSize: 14,
   },
   imageAvatar: {
     width: 150,
@@ -207,13 +442,14 @@ const styles = StyleSheet.create({
     // marginTop: '20%',
     borderWidth: 5,
     marginBottom: 20,
+    alignSelf: 'center',
   },
   modalView: {
     margin: 20,
     backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    // alignItems: 'center',
+    borderRadius: 10,
+    padding: 10,
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -223,34 +459,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  openButton: {
-    backgroundColor: '#F194FF',
-    borderRadius: 20,
-    padding: 10,
-    elevation: 2,
-  },
-  textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
   textLabel: {
     fontSize: 14,
     fontWeight: 'bold',
-  },
-  textDetail: {
-    paddingRight: 50,
-    paddingTop: 10,
-  },
-  textForm: {
-    marginLeft: 20,
-    marginRight: 20,
-    marginTop: 10,
-    marginBottom: 10,
   },
 });

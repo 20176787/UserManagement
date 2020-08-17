@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useRef} from 'react';
 import {
   View,
   Text,
@@ -15,11 +15,21 @@ import {
   RefreshControl,
   ScrollView,
 } from 'react-native';
-import {setAuthUser} from '../shared/OnValueChange';
+import {setAuthUser, setLanguageAuth} from '../shared/OnValueChange';
 import RNFetchBlob from 'rn-fetch-blob';
 import {AuthContext, path} from '../../App';
 import {set} from 'react-native-reanimated';
 import Modal from 'react-native-modal';
+import I18N from '../store/i18n';
+import AsyncStorage from '@react-native-community/async-storage';
+import Icon from 'react-native-vector-icons/AntDesign';
+import {
+  Menu,
+  MenuOptions,
+  MenuOption,
+  MenuTrigger,
+  MenuProvider,
+} from 'react-native-popup-menu';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -27,11 +37,18 @@ const wait = (timeout) => {
 };
 const {width, height} = Dimensions.get('window');
 export default function LoginScreen({navigation}) {
+  const ref_input2 = useRef();
   const {signIn} = React.useContext(AuthContext);
-  const [phone, setPhone] = useState(null);
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [language, setLanguage] = useState('en-US');
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [visible, setVisible] = React.useState(false);
+
+  const openMenu = () => setVisible(true);
+
+  const closeMenu = () => setVisible(false);
   const onRefresh = useCallback(() => {
     wait(2000).then(() => setRefreshing(false));
   }, []);
@@ -53,6 +70,8 @@ export default function LoginScreen({navigation}) {
         console.log(JSON.parse(res.text()).error);
         let access_token = JSON.parse(res.text()).access_token;
         setAuthUser({access_token, phone, password});
+        let languageAuth = language;
+        setLanguageAuth({languageAuth});
         if (access_token != undefined) {
           signIn({phone, password});
         } else {
@@ -68,7 +87,7 @@ export default function LoginScreen({navigation}) {
       });
   };
   const checkLogin = () => {
-    if (phone == null) {
+    if (phone == null || phone == '') {
       Alert.alert('WARRING', 'please enter your phone');
       setPassword(null);
     } else if (password == null || password.length < 6) {
@@ -78,6 +97,22 @@ export default function LoginScreen({navigation}) {
       onSignIn();
     }
   };
+  useEffect(() => {
+    const getLang = () => {
+      AsyncStorage.getItem('Language').then((str) => {
+        if (!str) {
+          console.log(null);
+        }
+        try {
+          setLanguage(JSON.parse(str));
+        } catch (error) {
+          AsyncStorage.removeItem('Language');
+          throw error;
+        }
+      });
+    };
+    getLang();
+  }, []);
   return (
     <SafeAreaView>
       <ImageBackground
@@ -89,46 +124,85 @@ export default function LoginScreen({navigation}) {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }>
-          <View style={styles.container}>
-            <Image
-              style={styles.imageAvatar}
-              source={require('../store/img/logo.png')}
-            />
-            {/*<Text style={styles.logo}>Login</Text>*/}
-            <View style={styles.inputView}>
-              <TextInput
-                placeholder="Your phone...."
-                defaultValue={phone}
-                placeholderTextColor={'#abae94'}
-                style={styles.inputText}
-                onChangeText={(text) => setPhone(text)}
+          <MenuProvider>
+            <Menu
+              style={{
+                alignItems: 'center',
+                width: 100,
+                borderRadius: 5,
+                alignSelf: 'center',
+                marginTop: 50,
+                flexDirection: 'row',
+              }}>
+              <MenuTrigger
+                text={language == 'vi-VN' ? 'Tiếng Việt' : 'English'}
+                customStyles={triggerStyles}
               />
-            </View>
-            <View style={styles.inputView}>
-              <TextInput
-                secureTextEntry
-                keyboardType="default"
-                placeholder="Your password...."
-                defaultValue={password}
-                placeholderTextColor={'#abae94'}
-                style={styles.inputText}
-                onChangeText={(text) => setPassword(text)}
+              <Icon name={'down'} size={20} color={'#fff'} />
+              <MenuOptions>
+                <MenuOption
+                  onSelect={() => setLanguage('vi-VN')}
+                  text="Vietnamese"
+                />
+                <MenuOption onSelect={() => setLanguage('en-US')}>
+                  <Text style={{color: 'red'}}>English</Text>
+                </MenuOption>
+              </MenuOptions>
+            </Menu>
+            <View style={styles.container}>
+              <Image
+                style={styles.imageAvatar}
+                source={require('../store/img/logo.png')}
               />
+              {/*<Text style={styles.logo}>Login</Text>*/}
+              <View style={styles.inputView}>
+                <TextInput
+                  placeholder={`${I18N.get('PhoneNumber', language)}`}
+                  defaultValue={phone}
+                  placeholderTextColor={'#abae94'}
+                  autoFocus={true}
+                  style={styles.inputText}
+                  onChangeText={(text) => setPhone(text)}
+                  onSubmitEditing={() => ref_input2.current.focus()}
+                />
+              </View>
+              <View style={styles.inputView}>
+                <TextInput
+                  ref={ref_input2}
+                  secureTextEntry
+                  keyboardType="default"
+                  placeholder={`${I18N.get('Password', language)}`}
+                  defaultValue={password}
+                  placeholderTextColor={'#abae94'}
+                  style={styles.inputText}
+                  onChangeText={(text) => setPassword(text)}
+                />
+              </View>
+              {/*<Pressable*/}
+              {/*  style={styles.forgot}*/}
+              {/*  onPress={() => navigation.navigate('ForgotPassword')}>*/}
+              {/*  <Text style={styles.forgot}>forgot password?</Text>*/}
+              {/*</Pressable>*/}
+              <Pressable
+                style={styles.loginButton}
+                onPress={() => checkLogin()}>
+                <Text style={styles.loginText}>{`${I18N.get(
+                  'Login',
+                  language,
+                )}`}</Text>
+              </Pressable>
+              <Pressable
+                style={styles.registerButton}
+                onPress={() =>
+                  navigation.navigate('Register', {language: language})
+                }>
+                <Text style={styles.loginText}>{`${I18N.get(
+                  'Register',
+                  language,
+                )}`}</Text>
+              </Pressable>
             </View>
-            <Pressable
-              style={styles.forgot}
-              onPress={() => navigation.navigate('ForgotPassword')}>
-              <Text style={styles.forgot}>forgot password?</Text>
-            </Pressable>
-            <Pressable style={styles.loginButton} onPress={() => checkLogin()}>
-              <Text style={styles.loginText}>LOGIN</Text>
-            </Pressable>
-            <Pressable
-              style={styles.registerButton}
-              onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.loginText}>REGISTER</Text>
-            </Pressable>
-          </View>
+          </MenuProvider>
         </KeyboardAvoidingView>
       </ImageBackground>
       <Modal
@@ -217,3 +291,18 @@ const styles = StyleSheet.create({
     // marginBottom: 20,
   },
 });
+const triggerStyles = {
+  triggerText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  triggerWrapper: {
+    padding: 5,
+    // backgroundColor: 'blue',
+  },
+  triggerTouchable: {
+    underlayColor: 'darkblue',
+    activeOpacity: 70,
+  },
+};

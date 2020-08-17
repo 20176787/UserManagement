@@ -23,14 +23,17 @@ import {path} from '../../../App';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import HeaderImageTab from '../../shared/HeaderImageTab';
 import moment from 'moment';
+import I18N from "../../store/i18n";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
 };
 export default function ImageScreen({route, navigation}) {
+  moment.locale('vi');
   const {user} = route.params;
   const {data} = route.params;
+  const {language} = route.params;
   const [modalVisible, setModalVisible] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -194,30 +197,25 @@ export default function ImageScreen({route, navigation}) {
   };
   return (
     <SafeAreaView>
-      <View>
-        <HeaderImageTab
-          navigation={navigation}
-          NameTab={'IMAGES'}
-          user={user}
-          data={data}
-        />
-        <View style={{alignItems: 'center', paddingTop: 20}}>
-          <Image
-            style={styles.imageAvatar}
-            source={
-              data.avatar_url != null
-                ? {uri: data.avatar_url}
-                : require('../../store/img/logo.png')
-            }
-          />
-          <Text style={{fontSize: 20, fontWeight: 'bold', color: 'red'}}>
-            {data.name}
-          </Text>
-        </View>
-      </View>
-      {/*{dataImg[0] != undefined ? (*/}
+      {/*<View>*/}
+      <HeaderImageTab
+        navigation={navigation}
+        NameTab={`${I18N.get(
+            'Images',
+            language,
+        )}`}
+        user={user}
+        data={data}
+        language={language}
+      />
+      <Text style={{alignSelf: 'center', color: 'red'}}>
+        {dataImg.length} {`${I18N.get(
+          'Images',
+          language,
+      )}`}
+      </Text>
       <FlatList
-        style={{height: '56%', margin: 10}}
+        style={{height: '81%', margin: 10}}
         data={dataImg}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -303,7 +301,10 @@ export default function ImageScreen({route, navigation}) {
             padding: 10,
           }}>
           <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 20}}>
-            DELETE
+            {`${I18N.get(
+                'Delete',
+                language,
+            )}`}
           </Text>
         </Pressable>
       ) : null}

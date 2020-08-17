@@ -24,6 +24,7 @@ import {path} from '../../../App';
 import ImageResizer from 'react-native-image-resizer';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import HeaderUploadImageTab from '../../shared/HeaderUploadImageTab';
+import I18N from "../../store/i18n";
 const {width, height} = Dimensions.get('window');
 const wait = (timeout) => {
   return new Promise((resolve) => {
@@ -33,6 +34,7 @@ const wait = (timeout) => {
 export default function UploadImageScreen({route, navigation}) {
   const {user} = route.params;
   const {data} = route.params;
+  const {language} = route.params;
   const [resizeImageUri, setResizedImageUri] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
@@ -46,6 +48,8 @@ export default function UploadImageScreen({route, navigation}) {
         return [...datas, value];
       case 'remove':
         return datas.filter((index) => index !== value);
+      case 'reset':
+        return [];
       default:
         return datas;
     }
@@ -56,6 +60,8 @@ export default function UploadImageScreen({route, navigation}) {
         return [...data, value];
       case 'remove':
         return data.filter((index) => index.id !== value);
+      case 'reset':
+        return [];
       default:
         return data;
     }
@@ -66,9 +72,19 @@ export default function UploadImageScreen({route, navigation}) {
         return [...dataImg, value];
       case 'remove':
         return dataImg.filter((index) => index !== value);
+      case 'reset':
+        return [];
       default:
         return dataImg;
     }
+  }, []);
+  useEffect(() => {
+    navigation.addListener('focus', () => {
+      console.log('focus');
+      cleanupImages();
+      setDatas({type: 'reset'});
+      setImgs({type: 'reset'});
+    });
   }, []);
   const onUploadImage = async () => {
     setRefreshing(true);
@@ -161,7 +177,10 @@ export default function UploadImageScreen({route, navigation}) {
       <View>
         <HeaderUploadImageTab
           navigation={navigation}
-          NameTab={'UPLOAD IMAGES'}
+          NameTab={`${I18N.get(
+              'UploadImages',
+              language,
+          )}`}
           user={user}
         />
         <Image
@@ -227,10 +246,17 @@ export default function UploadImageScreen({route, navigation}) {
                 fontWeight: 'bold',
                 color: '#545252',
               }}>
-              NO IMAGE
+              {`${I18N.get(
+                  'NoImage',
+                  language,
+              )}`}
             </Text>
           </View>
         )}
+        <Text style={{alignSelf:'center', color:'red'}}>{imgs.length} {`${I18N.get(
+            'Images',
+            language,
+        )}`}</Text>
         <View
           style={{
             flexDirection: 'row',
@@ -241,14 +267,20 @@ export default function UploadImageScreen({route, navigation}) {
             style={{backgroundColor: 'red', padding: 10, borderRadius: 15}}
             onPress={pickImage}>
             <Text style={{color: '#fff', fontWeight: 'bold'}}>
-              SELECT IMAGES
+              {`${I18N.get(
+                  'SelectImages',
+                  language,
+              )}`}
             </Text>
           </Pressable>
           <Pressable
             style={{backgroundColor: 'red', padding: 10, borderRadius: 15}}
             onPress={onUploadImage}>
             <Text style={{color: '#fff', fontWeight: 'bold'}}>
-              UPLOAD IMAGES
+              {`${I18N.get(
+                  'UploadImages',
+                  language,
+              )}`}
             </Text>
           </Pressable>
         </View>

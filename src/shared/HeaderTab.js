@@ -20,7 +20,7 @@ export default function HeaderTab({navigation, NameTab}) {
           onPress={() => {
             navigation.dispatch(DrawerActions.openDrawer());
           }}>
-          <Icon name="home" size={35} color="#fff" marginTop={5} />
+          <Icon name="menu" size={35} color="#fff" marginTop={5} />
         </Pressable>
         <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 20}}>
           {NameTab ? NameTab : null}

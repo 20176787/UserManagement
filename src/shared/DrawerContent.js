@@ -5,6 +5,7 @@ import {
   ScrollView,
   RefreshControl,
   SafeAreaView,
+  Pressable,
 } from 'react-native';
 import {
   Avatar,
@@ -22,6 +23,8 @@ import RNFetchBlob from 'rn-fetch-blob/index';
 import AsyncStorage from '@react-native-community/async-storage';
 import {AuthContext, path} from '../../App';
 import Modal from 'react-native-modal';
+import I18N from '../store/i18n';
+import {setLanguageAuth} from "./OnValueChange";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -35,13 +38,24 @@ export default function DrawerContent(props) {
   };
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [language, setLanguage] = useState('en-US');
   const onRefresh = useCallback(() => {
     wait(2000).then(() => setRefreshing(false));
   }, []);
   const [user, setUser] = useState();
-  const [isFocus, setIsFocus] = useState(false);
   const [data, setData] = useState({});
   useEffect(() => {
+    AsyncStorage.getItem('Language').then((str) => {
+      if (!str) {
+        setLanguage(null);
+      }
+      try {
+        setLanguage(JSON.parse(str));
+      } catch (error) {
+        AsyncStorage.removeItem('AuthUser');
+        throw error;
+      }
+    });
     AsyncStorage.getItem('AuthUser').then((str) => {
       if (!str) {
         setUser(null);
@@ -69,17 +83,19 @@ export default function DrawerContent(props) {
         <View style={{flex: 1}}>
           <View style={{paddingLeft: 20}}>
             <View style={{flexDirection: 'row', marginTop: 15}}>
-              <Avatar.Image
-                source={
-                  data.avatar_url != null
-                    ? {uri: data.avatar_url}
-                    : require('../store/img/logo.png')
-                }
-                size={50}
-              />
+              <Pressable onPress={() => props.navigation.navigate('Home')}>
+                <Avatar.Image
+                  source={
+                    data.avatar_url != null
+                      ? {uri: data.avatar_url}
+                      : require('../store/img/logo.png')
+                  }
+                  size={50}
+                />
+              </Pressable>
               <View style={{marginLeft: 15, flexDirection: 'column'}}>
                 <Title style={styles.title}>{data.name}</Title>
-                <Caption style={styles.caption}>@user</Caption>
+                <Caption style={styles.caption}>@{data.level}</Caption>
               </View>
             </View>
             {/*<View>*/}
@@ -99,52 +115,89 @@ export default function DrawerContent(props) {
             icon={({color, size}) => (
               <Icon name={'bookmark-outline'} color={color} size={size} />
             )}
-            label={'Information'}
+            label={`${I18N.get('Information', language)}`}
             onPress={() => {
-              props.navigation.navigate('Home');
+              props.navigation.navigate('Home', {language: language});
             }}
           />
           <DrawerItem
             icon={({color, size}) => (
               <Icon name={'home-outline'} color={color} size={size} />
             )}
-            label={'Images'}
+            label={`${I18N.get('Images', language)}`}
             onPress={() => {
-              props.navigation.navigate('Images', {user: user, data: data});
+              props.navigation.navigate('Images', {
+                user: user,
+                data: data,
+                language: language,
+              });
             }}
           />
           <DrawerItem
             icon={({color, size}) => (
               <Icon name={'account-outline'} color={color} size={size} />
             )}
-            label={'Change Password'}
+            label={`${I18N.get('ChangePassword', language)}`}
             onPress={() => {
               props.navigation.navigate('ChangePassword', {
                 user: user,
                 data: data,
+                language: language,
               });
             }}
           />
-          <DrawerItem
-            icon={({color, size}) => (
-              <Icon name={'account-check-outline'} color={color} size={size} />
-            )}
-            label={'Update Profile'}
-            onPress={() => {
-              props.navigation.navigate('EditUser', {user: user, data: data});
-            }}
-          />
+          {/*<DrawerItem*/}
+          {/*  icon={({color, size}) => (*/}
+          {/*    <Icon name={'account-check-outline'} color={color} size={size} />*/}
+          {/*  )}*/}
+          {/*  label={'Update Profile'}*/}
+          {/*  onPress={() => {*/}
+          {/*    props.navigation.navigate('EditUser', {user: user, data: data});*/}
+          {/*  }}*/}
+          {/*/>*/}
           {data.level == '1' ? (
             <DrawerItem
               icon={({color, size}) => (
                 <Icon name={'format-list-bulleted'} color={color} size={size} />
               )}
-              label={'List User'}
+              label={`${I18N.get('ListUser', language)}`}
               onPress={() => {
-                props.navigation.navigate('ListUser', {user: user});
+                props.navigation.navigate('ListUser', {
+                  user: user,
+                  language: language,
+                });
               }}
             />
           ) : null}
+        </Drawer.Section>
+        <Drawer.Section title={`${I18N.get('Language', language)}`}>
+          <TouchableRipple onPress={() => toggleTheme()}>
+            <View style={styles.preference}>
+              <Pressable
+                  style={language=='vi-VN'?{backgroundColor:'#ff2b2b'}:null}
+                onPress={() => {
+                  setLanguage('vi-VN');
+                  let languageAuth = 'vi-VN';
+                  setLanguageAuth({languageAuth});
+                  props.navigation.navigate('Restart');
+                }}>
+                <Text >{`${I18N.get('Viet', language)}`}</Text>
+              </Pressable>
+              {/*<View pointerEvents={'none'}>*/}
+              {/*  <Switch value={isDarkTheme} color={'red'} onPress={()=>{props.navigation.navigate('Home')}}/>*/}
+              {/*</View>*/}
+              <Pressable
+                  style={language=='en-US'?{backgroundColor:'#ff2b2b',marginTop:10}:{backgroundColor:'#fff',marginTop:10}}
+                onPress={() => {
+                  setLanguage('en-US');
+                  let languageAuth = 'en-US';
+                  setLanguageAuth({languageAuth});
+                  props.navigation.navigate('Restart');
+                }}>
+                <Text>{`${I18N.get('Eng', language)}`}</Text>
+              </Pressable>
+            </View>
+          </TouchableRipple>
         </Drawer.Section>
       </DrawerContentScrollView>
       <Drawer.Section style={styles.bottomDrawerSection}>
@@ -152,7 +205,7 @@ export default function DrawerContent(props) {
           icon={({color, size}) => (
             <Icon name="exit-to-app" color={color} size={size} />
           )}
-          label="Sign Out"
+          label={`${I18N.get('SignOut', language)}`}
           onPress={() => {
             setModalVisible(true);
             setRefreshing(true);
@@ -200,7 +253,7 @@ const styles = StyleSheet.create({
     marginRight: 3,
   },
   preference: {
-    flexDirection: 'row',
+    // flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 12,
     paddingHorizontal: 16,

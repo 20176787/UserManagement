@@ -13,7 +13,9 @@ import HeaderTab from '../../shared/HeaderTab';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
+import {SearchBar} from 'react-native-elements';
 import {path} from '../../../App';
+import I18N from '../../store/i18n';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -21,7 +23,9 @@ const wait = (timeout) => {
 };
 export default function ListUserScreen({route, navigation}) {
   const {user} = route.params;
+  const {language} = route.params;
   const [data, setData] = useState();
+  const [search, setSearch] = useState();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
     wait(2000).then(() => setRefreshing(false));
@@ -49,7 +53,19 @@ export default function ListUserScreen({route, navigation}) {
   }, []);
   return (
     <SafeAreaView>
-      <HeaderTab NameTab={'LIST USER'} navigation={navigation} />
+      <HeaderTab
+        NameTab={`${I18N.get('ListUser', language)}`}
+        navigation={navigation}
+      />
+      <SearchBar
+        placeholder="Type Here..."
+        onChangeText={(text) => setSearch(text)}
+        value={search}
+        // inputStyle={{backgroundColor: 'white'}}
+        // containerStyle={{backgroundColor: 'white', borderWidth: 1, borderRadius: 5}}
+        // leftIconContainerStyle={{backgroundColor: 'white',}}
+        // rightIconContainerStyle={{backgroundColor:'#fff'}}
+      />
       <FlatList
         style={{height: '100%', margin: 10}}
         data={data}
@@ -58,40 +74,64 @@ export default function ListUserScreen({route, navigation}) {
         }
         numColumns={1}
         renderItem={({item, index}) => (
-          <View
-            style={{
-              flexDirection: 'row',
-              backgroundColor: '#fff',
-              padding: 10,
-              margin: 10,
-              justifyContent: 'space-between',
-              borderRadius: 10,
-            }}>
+          <Pressable
+            onPress={() =>
+              navigation.navigate('InfoUser', {
+                user: user,
+                data: item,
+                language: language,
+              })
+            }>
             <View
               style={{
                 flexDirection: 'row',
+                backgroundColor: '#fff',
+                padding: 10,
+                margin: 10,
+                justifyContent: 'space-between',
+                borderRadius: 10,
               }}>
-              <Image
-                style={styles.imageAvatar}
-                source={
-                  item.avatar_url != null
-                    ? {uri: item.avatar_url}
-                    : require('../../store/img/logo.png')
-                }
-              />
-              <View style={{paddingLeft: 20}}>
-                <Text>{item.name}</Text>
-                <Text>{item.phone}</Text>
-                <Text>{item.email}</Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                }}>
+                <Image
+                  style={styles.imageAvatar}
+                  source={
+                    item.avatar_url != null
+                      ? {uri: item.avatar_url}
+                      : require('../../store/img/logo.png')
+                  }
+                />
+                <View style={{paddingLeft: 20}}>
+                  <View style={{flexDirection: 'row'}}>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {`${I18N.get('Name', language)}`}:{' '}
+                    </Text>
+                    <Text>{item.name}</Text>
+                  </View>
+                  <View style={{flexDirection: 'row'}}>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {`${I18N.get('PhoneNumber', language)}`}:{' '}
+                    </Text>
+                    <Text>{item.phone}</Text>
+                  </View>
+                  <View style={{flexDirection: 'row'}}>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {`${I18N.get('Email', language)}`}:{' '}
+                    </Text>
+                    <Text>{item.email}</Text>
+                  </View>
+                </View>
               </View>
+              <Icon
+                name={'chevron-right'}
+                size={30}
+                color={'red'}
+                style={{paddingTop: 15}}
+              />
             </View>
-            <Icon
-              name={'chevron-right'}
-              size={30}
-              color={'red'}
-              style={{paddingTop: 15}}
-            />
-          </View>
+          </Pressable>
         )}
         keyExtractor={(item, key) => key}
       />
