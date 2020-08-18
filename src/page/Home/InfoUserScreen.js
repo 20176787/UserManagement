@@ -49,6 +49,7 @@ export default function InfoUserScreen({navigation, route}) {
       />
     );
   };
+
   return (
     <SafeAreaView style={{height: '100%'}}>
       <HeaderUploadImageTab navigation={navigation} NameTab={'INFORMATION'} />

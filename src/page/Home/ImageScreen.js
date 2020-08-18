@@ -2,13 +2,10 @@ import React, {useState, useEffect, useReducer, useCallback} from 'react';
 import {
   View,
   Text,
-  ScrollView,
   Pressable,
-  ImageBackground,
   Image,
   Dimensions,
   SafeAreaView,
-  StyleSheet,
   FlatList,
   Alert,
   RefreshControl,
@@ -18,12 +15,12 @@ const {width, height} = Dimensions.get('window');
 import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import HeaderTab from '../../shared/HeaderTab';
 import {path} from '../../../App';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import HeaderImageTab from '../../shared/HeaderImageTab';
 import moment from 'moment';
-import I18N from "../../store/i18n";
+import I18N from '../../store/i18n';
+import 'moment/locale/vi';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -34,6 +31,7 @@ export default function ImageScreen({route, navigation}) {
   const {user} = route.params;
   const {data} = route.params;
   const {language} = route.params;
+  moment.locale(`${language}`);
   const [modalVisible, setModalVisible] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -78,8 +76,8 @@ export default function ImageScreen({route, navigation}) {
   }, []);
   const createTwoButtonAlert = () =>
     Alert.alert(
-      'Warring ',
-      'Do you want to delete this images?',
+      `${I18N.get('Warring', language)}`,
+      `${I18N.get('AlertDelete', language)}`,
       [
         {
           text: 'Cancel',
@@ -136,32 +134,10 @@ export default function ImageScreen({route, navigation}) {
       }
     };
     navigation.addListener('focus', () => {
+      setSelected({type: 'reset'});
       getData();
     });
   }, []);
-  // const deleteImage = async ({item}) => {
-  //   setDataImg({
-  //     type: 'remove',
-  //     value: item.id,
-  //   });
-  //   setImgs({
-  //     type: 'remove',
-  //     value: item.id,
-  //   });
-  //   try {
-  //     RNFetchBlob.fetch('GET', `${path}/api/auth/deleteImage/${item.id}`, {
-  //       'Content-Type': 'application/json',
-  //       Authorization: 'Bearer ' + user.access_token,
-  //     })
-  //       .then((res) => {
-  //         console.log(res.data);
-  //       })
-  //       .catch((error) => console.log(error));
-  //   } catch (error) {
-  //     AsyncStorage.removeItem('AuthUser');
-  //     throw error;
-  //   }
-  // };
   const multiDeleteImage = async () => {
     console.log(selected);
     selected.map((i) => {
@@ -200,19 +176,13 @@ export default function ImageScreen({route, navigation}) {
       {/*<View>*/}
       <HeaderImageTab
         navigation={navigation}
-        NameTab={`${I18N.get(
-            'Images',
-            language,
-        )}`}
+        NameTab={`${I18N.get('Images', language)}`}
         user={user}
         data={data}
         language={language}
       />
       <Text style={{alignSelf: 'center', color: 'red'}}>
-        {dataImg.length} {`${I18N.get(
-          'Images',
-          language,
-      )}`}
+        {dataImg.length} {`${I18N.get('Images', language)}`}
       </Text>
       <FlatList
         style={{height: '81%', margin: 10}}
@@ -289,7 +259,7 @@ export default function ImageScreen({route, navigation}) {
             </View>
           );
         }}
-        keyExtractor={(item, key) => key}
+        keyExtractor={(item, key) => item.uri}
       />
       {selected[0] != undefined ? (
         <Pressable
@@ -301,10 +271,7 @@ export default function ImageScreen({route, navigation}) {
             padding: 10,
           }}>
           <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 20}}>
-            {`${I18N.get(
-                'Delete',
-                language,
-            )}`}
+            {`${I18N.get('Delete', language)}`}
           </Text>
         </Pressable>
       ) : null}
@@ -331,20 +298,3 @@ export default function ImageScreen({route, navigation}) {
     </SafeAreaView>
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    // alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  imageAvatar: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderColor: '#ff2929',
-    overflow: 'hidden',
-    // marginTop: '20%',
-    borderWidth: 5,
-    marginBottom: 20,
-  },
-});

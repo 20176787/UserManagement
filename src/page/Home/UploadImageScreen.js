@@ -24,7 +24,7 @@ import {path} from '../../../App';
 import ImageResizer from 'react-native-image-resizer';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import HeaderUploadImageTab from '../../shared/HeaderUploadImageTab';
-import I18N from "../../store/i18n";
+import I18N from '../../store/i18n';
 const {width, height} = Dimensions.get('window');
 const wait = (timeout) => {
   return new Promise((resolve) => {
@@ -47,7 +47,7 @@ export default function UploadImageScreen({route, navigation}) {
       case 'add':
         return [...datas, value];
       case 'remove':
-        return datas.filter((index) => index !== value);
+        return datas.filter((index) => index.checkT !== value);
       case 'reset':
         return [];
       default:
@@ -59,7 +59,7 @@ export default function UploadImageScreen({route, navigation}) {
       case 'add':
         return [...data, value];
       case 'remove':
-        return data.filter((index) => index.id !== value);
+        return data.filter((index) => index.checkT !== value);
       case 'reset':
         return [];
       default:
@@ -106,11 +106,14 @@ export default function UploadImageScreen({route, navigation}) {
             cleanupImages();
             setRefreshing(false);
             imgs.map((i) => setImgs({type: 'remove', value: i}));
-            datas.map((i) => setDatas({type: 'remove', value: i}));
+            datas.map((i) => setDatas({type: 'remove', value: i.id}));
             navigation.navigate('Images');
           })
           .catch((error) => console.log(error))
-      : Alert.alert('WARRING', 'No image selected');
+      : Alert.alert(
+          `${I18N.get('Warring', language)}`,
+          `${I18N.get('AlertImage1', language)}`,
+        );
   };
   const cleanupImages = () => {
     ImagePicker.clean()
@@ -119,6 +122,22 @@ export default function UploadImageScreen({route, navigation}) {
         alert(e);
       });
   };
+  const createTwoButtonAlert = () =>
+    Alert.alert(
+      `${I18N.get('Warring', language)}`,
+      `${I18N.get('AlertUpload', language)}`,
+      [
+        {
+          text: 'Cancel',
+          // onPress: () => {
+          //   setSelected({type: 'reset'});
+          // },
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => onUploadImage()},
+      ],
+      {cancelable: false},
+    );
   const pickImage = async () => {
     console.log(moment().utcOffset('+07:00'));
     await ImagePicker.openPicker({
@@ -134,6 +153,7 @@ export default function UploadImageScreen({route, navigation}) {
             40,
           )
             .then(({uri}) => {
+              console.log()
               setImgs({
                 type: 'add',
                 value: {
@@ -141,6 +161,7 @@ export default function UploadImageScreen({route, navigation}) {
                   width: width - 20,
                   height: width / 2 - 10,
                   mime: i.mime,
+                  checkT: uri,
                 },
               });
               setDatas({
@@ -149,6 +170,7 @@ export default function UploadImageScreen({route, navigation}) {
                   name: `${moment().utcOffset('+07:00')}`,
                   filename: `${moment().utcOffset('+07:00')}.jpg`,
                   data: RNFetchBlob.wrap(uri),
+                  checkT:uri,
                 },
               });
               setDataImgs({
@@ -156,7 +178,7 @@ export default function UploadImageScreen({route, navigation}) {
                 value: {
                   props: {},
                   url: i.path,
-                  id: i.id,
+                  checkT: uri,
                 },
               });
               console.log('uri', uri);
@@ -164,8 +186,8 @@ export default function UploadImageScreen({route, navigation}) {
             .catch((err) => {
               console.log(err);
               return Alert.alert(
-                'Unable to resize the photo',
-                'Check the console for full the error message',
+                `${I18N.get('AlertImage2', language)}`,
+                `${I18N.get('AlertImage3', language)}`,
               );
             });
         });
@@ -177,10 +199,7 @@ export default function UploadImageScreen({route, navigation}) {
       <View>
         <HeaderUploadImageTab
           navigation={navigation}
-          NameTab={`${I18N.get(
-              'UploadImages',
-              language,
-          )}`}
+          NameTab={`${I18N.get('UploadImages', language)}`}
           user={user}
         />
         <Image
@@ -221,13 +240,18 @@ export default function UploadImageScreen({route, navigation}) {
                   <Pressable
                     style={{position: 'absolute'}}
                     onPress={() => {
-                      setImgs({
+                      console.log(item,dataImgs,datas);
+                      setDatas({
                         type: 'remove',
-                        value: item,
+                        value: item.checkT,
                       });
                       setDataImgs({
                         type: 'remove',
-                        value: item.id,
+                        value: item.checkT,
+                      });
+                      setImgs({
+                        type: 'remove',
+                        value: item,
                       });
                     }}>
                     <Icon name="cancel" size={30} color="black" marginTop={5} />
@@ -235,7 +259,7 @@ export default function UploadImageScreen({route, navigation}) {
                 </View>
               </View>
             )}
-            keyExtractor={(item, key) => key}
+            keyExtractor={(item, key) => item.uri}
           />
         ) : (
           <View style={{height: '45%', backgroundColor: '#fff', margin: 10}}>
@@ -246,17 +270,13 @@ export default function UploadImageScreen({route, navigation}) {
                 fontWeight: 'bold',
                 color: '#545252',
               }}>
-              {`${I18N.get(
-                  'NoImage',
-                  language,
-              )}`}
+              {`${I18N.get('NoImage', language)}`}
             </Text>
           </View>
         )}
-        <Text style={{alignSelf:'center', color:'red'}}>{imgs.length} {`${I18N.get(
-            'Images',
-            language,
-        )}`}</Text>
+        <Text style={{alignSelf: 'center', color: 'red'}}>
+          {imgs.length} {`${I18N.get('Images', language)}`}
+        </Text>
         <View
           style={{
             flexDirection: 'row',
@@ -267,20 +287,14 @@ export default function UploadImageScreen({route, navigation}) {
             style={{backgroundColor: 'red', padding: 10, borderRadius: 15}}
             onPress={pickImage}>
             <Text style={{color: '#fff', fontWeight: 'bold'}}>
-              {`${I18N.get(
-                  'SelectImages',
-                  language,
-              )}`}
+              {`${I18N.get('SelectImages', language)}`}
             </Text>
           </Pressable>
           <Pressable
             style={{backgroundColor: 'red', padding: 10, borderRadius: 15}}
-            onPress={onUploadImage}>
+            onPress={createTwoButtonAlert}>
             <Text style={{color: '#fff', fontWeight: 'bold'}}>
-              {`${I18N.get(
-                  'UploadImages',
-                  language,
-              )}`}
+              {`${I18N.get('UploadImages', language)}`}
             </Text>
           </Pressable>
         </View>

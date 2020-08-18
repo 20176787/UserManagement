@@ -25,6 +25,7 @@ import Icon1 from 'react-native-vector-icons/MaterialIcons';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
+import 'moment/locale/vi';
 import ImagePicker from 'react-native-image-crop-picker/index';
 import ViewAvatar from '../../shared/ViewAvatar';
 import I18N from '../../store/i18n';
@@ -67,7 +68,7 @@ export default function InformationScreen({navigation, route}) {
           setLanguage(null);
         }
         try {
-          moment.locale('vi');
+          moment.locale(`${language}`);
           setLanguage(JSON.parse(str));
         } catch (error) {
           AsyncStorage.removeItem('AuthUser');
@@ -99,9 +100,27 @@ export default function InformationScreen({navigation, route}) {
         }
       });
     };
+    navigation.addListener('focus', () => {
       getLang();
       getData();
+    });
   }, []);
+  const createTwoButtonAlert = () =>
+    Alert.alert(
+      `${I18N.get('Warring', language)}`,
+      `${I18N.get('AlertUpdate', language)}`,
+      [
+        {
+          text: 'Cancel',
+          // onPress: () => {
+          //   setSelected({type: 'reset'});
+          // },
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => onUpdate()},
+      ],
+      {cancelable: false},
+    );
   const onUploadImage = async () => {
     await RNFetchBlob.fetch(
       'POST',
@@ -166,7 +185,7 @@ export default function InformationScreen({navigation, route}) {
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
     setShow(Platform.OS === 'ios');
-    setBirth(moment(currentDate).format('L'));
+    setBirth(currentDate);
     console.log(moment(date).format('L'));
   };
 
@@ -178,27 +197,15 @@ export default function InformationScreen({navigation, route}) {
   const showDatepicker = () => {
     showMode('date');
   };
-  const drawLine = () => {
-    return (
-      <View
-        style={{
-          borderBottomColor: 'rgba(0,0,0,0.73)',
-          borderBottomWidth: 1.5,
-          marginLeft: 20,
-          marginRight: 20,
-        }}
-      />
-    );
-  };
   return (
     <SafeAreaView>
       <HeaderTab
         navigation={navigation}
         NameTab={`${I18N.get('Information', language)}`}
+        language={language}
       />
       <KeyboardAvoidingView
-        style={{justifyContent: 'center'}}
-        behavior="padding">
+        behavior={Platform.OS == 'ios' ? 'padding' : 'padding'}>
         <ScrollView
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -207,7 +214,8 @@ export default function InformationScreen({navigation, route}) {
             <Pressable
               onPress={() => {
                 setModalVisibleAvatar(true);
-              }}>
+              }}
+              onLongPress={() => setModalVisible(true)}>
               <Image
                 style={styles.imageAvatar}
                 source={
@@ -219,6 +227,21 @@ export default function InformationScreen({navigation, route}) {
                 }
               />
             </Pressable>
+            {/*<View style={{}}>*/}
+            {/*<Icon1*/}
+            {/*    name={'add-a-photo'}*/}
+            {/*    size={30}*/}
+            {/*    color={'red'}*/}
+            {/*    style={{*/}
+            {/*      padding: 10,*/}
+            {/*      marginRight: 10,*/}
+            {/*      position: 'absolute',*/}
+            {/*      alignSelf: 'center',*/}
+            {/*      paddingTop: '35%',*/}
+            {/*      paddingLeft: '35%',*/}
+            {/*    }}*/}
+            {/*/>*/}
+            {/*</View>*/}
             <Pressable
               onPress={() => {
                 setModalVisible(true);
@@ -234,89 +257,107 @@ export default function InformationScreen({navigation, route}) {
                 {`${I18N.get('ChangeAvatar', language)}`}
               </Text>
             </Pressable>
-            <View>
-              <Text style={styles.textLabel}>{`${I18N.get('Name', language)}`}</Text>
-              <TextInput
-                placeholder="name"
-                placeholderTextColor={'#abae94'}
-                defaultValue={data.name}
-                onChangeText={(text) => setName(text)}
-                style={styles.input}
-              />
-            </View>
-            <View>
-              <Text style={styles.textLabel}>{`${I18N.get('PhoneNumber', language)}`}</Text>
-              <Text
-                style={{paddingTop: 10, paddingBottom: 10, color: '#abae94'}}>
-                {data.phone}
-              </Text>
-            </View>
-            <View>
-              <Text style={styles.textLabel}>{`${I18N.get('Email', language)}`}</Text>
-              <TextInput
-                placeholder="email"
-                placeholderTextColor={'#abae94'}
-                defaultValue={data.email}
-                onChangeText={(text) => setEmail(text)}
-                style={styles.input}
-              />
-            </View>
-            <View>
-              <Text style={styles.textLabel}>{`${I18N.get('Birth', language)}`}</Text>
+            <View style={{marginLeft: 10, marginRight: 10}}>
               <View>
-                <Pressable style={{}} onPress={showDatepicker}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      paddingTop: 10,
-                      paddingBottom: 10,
-                    }}>
+                <Text style={styles.textLabel}>{`${I18N.get(
+                  'Name',
+                  language,
+                )}`}</Text>
+                <TextInput
+                  placeholder="name"
+                  placeholderTextColor={'#abae94'}
+                  defaultValue={data.name}
+                  onChangeText={(text) => setName(text)}
+                  style={styles.input}
+                />
+              </View>
+              <View>
+                <Text style={styles.textLabel}>{`${I18N.get(
+                  'PhoneNumber',
+                  language,
+                )}`}</Text>
+                <Text
+                  style={{paddingTop: 10, paddingBottom: 10, color: '#abae94'}}>
+                  {data.phone}
+                </Text>
+              </View>
+              <View>
+                <Text style={styles.textLabel}>{`${I18N.get(
+                  'Email',
+                  language,
+                )}`}</Text>
+                <TextInput
+                  placeholder="email"
+                  placeholderTextColor={'#abae94'}
+                  defaultValue={data.email}
+                  onChangeText={(text) => setEmail(text)}
+                  style={styles.input}
+                />
+              </View>
+              <View>
+                <Text style={styles.textLabel}>{`${I18N.get(
+                  'Birth',
+                  language,
+                )}`}</Text>
+                <View>
+                  <Pressable style={{}} onPress={showDatepicker}>
                     <View
                       style={{
-                        backgroundColor: '#fff',
-                        width: width * 0.95,
-                        borderRadius: 5,
                         flexDirection: 'row',
                         justifyContent: 'space-between',
+                        paddingTop: 10,
+                        paddingBottom: 10,
                       }}>
-                      <Text
-                        style={
-                          (styles.input,
-                          {paddingTop: 15, paddingBottom: 15, paddingLeft: 2})
-                        }>
-                        {birth || data.birth}
-                      </Text>
-                      <Icon
-                        name={'calendar'}
-                        size={30}
-                        color={'red'}
-                        style={{padding: 10}}
-                      />
+                      <View
+                        style={{
+                          backgroundColor: '#fff',
+                          width: width * 0.9,
+                          borderRadius: 5,
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                        }}>
+                        <Text
+                          style={
+                            (styles.input,
+                            {paddingTop: 15, paddingBottom: 15, paddingLeft: 2})
+                          }>
+                          {moment(birth).format('L') ||
+                            moment(data.birth).format('L')}
+                        </Text>
+                        <Icon
+                          name={'calendar'}
+                          size={30}
+                          color={'red'}
+                          style={{padding: 10, marginRight: 10}}
+                        />
+                      </View>
                     </View>
-                  </View>
-                </Pressable>
-                {show && (
-                  <DateTimePicker
-                    testID="dateTimePicker"
-                    value={date}
-                    mode={mode}
-                    is24Hour={true}
-                    display="default"
-                    onChange={onChange}
-                  />
-                )}
+                  </Pressable>
+                  {show && (
+                    <DateTimePicker
+                      testID="dateTimePicker"
+                      value={date}
+                      mode={mode}
+                      is24Hour={true}
+                      display="default"
+                      onChange={onChange}
+                    />
+                  )}
+                </View>
               </View>
-            </View>
-            <View>
-              <Text style={styles.textLabel}>{`${I18N.get('Address', language)}`}</Text>
-              <TextInput
-                placeholder="address"
-                placeholderTextColor={'#abae94'}
-                defaultValue={data.address}
-                onChangeText={(text) => setAddress(text)}
-                style={styles.input}
-              />
+              <View>
+                <Text style={styles.textLabel}>{`${I18N.get(
+                  'Address',
+                  language,
+                )}`}</Text>
+                <TextInput
+                  placeholder="address"
+                  placeholderTextColor={'#abae94'}
+                  defaultValue={data.address}
+                  onChangeText={(text) => setAddress(text)}
+                  style={styles.input}
+                />
+              </View>
             </View>
             <Pressable
               style={{
@@ -325,7 +366,7 @@ export default function InformationScreen({navigation, route}) {
                 borderRadius: 15,
                 marginTop: 20,
               }}
-              onPress={() => onUpdate()}>
+              onPress={() => createTwoButtonAlert()}>
               <Text
                 style={{
                   margin: 10,
@@ -361,7 +402,7 @@ export default function InformationScreen({navigation, route}) {
                 })
               }>
               <Text style={{fontSize: 15, fontWeight: 'bold', padding: 10}}>
-                Select image from gallery
+                {`${I18N.get('GalleryPick', language)}`}
               </Text>
             </Pressable>
             <Pressable
@@ -383,7 +424,7 @@ export default function InformationScreen({navigation, route}) {
                 });
               }}>
               <Text style={{fontSize: 15, fontWeight: 'bold', padding: 10}}>
-                Select image from camera
+                {`${I18N.get('CameraPick', language)}`}
               </Text>
             </Pressable>
           </View>
@@ -442,6 +483,7 @@ const styles = StyleSheet.create({
     // marginTop: '20%',
     borderWidth: 5,
     marginBottom: 20,
+    zIndex:-1,
     alignSelf: 'center',
   },
   modalView: {

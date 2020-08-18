@@ -12,9 +12,9 @@ import enUS from './en-US';
 class I18N {
   get(key, LANG) {
     switch (LANG) {
-      case 'vi-VN':
+      case 'vi':
         return viVN[key];
-      case 'en-US':
+      case 'en':
         return enUS[key];
     }
   }

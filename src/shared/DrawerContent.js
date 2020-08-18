@@ -4,18 +4,16 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
-  SafeAreaView,
   Pressable,
+  Alert,
 } from 'react-native';
 import {
   Avatar,
   Title,
   Caption,
-  Paragraph,
   Drawer,
   Text,
   TouchableRipple,
-  Switch,
 } from 'react-native-paper';
 import {DrawerContentScrollView, DrawerItem} from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -24,7 +22,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {AuthContext, path} from '../../App';
 import Modal from 'react-native-modal';
 import I18N from '../store/i18n';
-import {setLanguageAuth} from "./OnValueChange";
+import {setLanguageAuth} from './OnValueChange';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -38,12 +36,46 @@ export default function DrawerContent(props) {
   };
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [language, setLanguage] = useState('en-US');
+  const [language, setLanguage] = useState('en');
   const onRefresh = useCallback(() => {
     wait(2000).then(() => setRefreshing(false));
   }, []);
   const [user, setUser] = useState();
   const [data, setData] = useState({});
+  const createTwoButtonAlert = () =>
+    Alert.alert(
+      `${I18N.get('Warring', language)}`,
+      `${I18N.get('AlertLogout', language)}`,
+      [
+        {
+          text: 'Cancel',
+          // onPress: () => {
+          //   setSelected({type: 'reset'});
+          // },
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => onLogout()},
+      ],
+      {cancelable: false},
+    );
+  const onLogout = () => {
+    setModalVisible(true);
+    setRefreshing(true);
+    RNFetchBlob.fetch('GET', `${path}/api/auth/logout/`, {
+      Authorization: user.access_token,
+    })
+      .then(() => {
+        setModalVisible(false);
+        setRefreshing(false);
+        console.log('logout success');
+        AsyncStorage.removeItem('AuthUser');
+        signOut();
+        // navigation.navigate('Login');
+      })
+      .catch((errorMessage, statusCode) => {
+        console.log(errorMessage, statusCode);
+      });
+  };
   useEffect(() => {
     AsyncStorage.getItem('Language').then((str) => {
       if (!str) {
@@ -95,7 +127,9 @@ export default function DrawerContent(props) {
               </Pressable>
               <View style={{marginLeft: 15, flexDirection: 'column'}}>
                 <Title style={styles.title}>{data.name}</Title>
-                <Caption style={styles.caption}>@{data.level}</Caption>
+                <Caption style={styles.caption}>
+                  @{data.level == '1' ? 'admin' : 'user'}
+                </Caption>
               </View>
             </View>
             {/*<View>*/}
@@ -174,25 +208,33 @@ export default function DrawerContent(props) {
           <TouchableRipple onPress={() => toggleTheme()}>
             <View style={styles.preference}>
               <Pressable
-                  style={language=='vi-VN'?{backgroundColor:'#ff2b2b'}:null}
+                style={
+                  language === 'vi'
+                    ? {backgroundColor: '#ff2b2b', padding: 10}
+                    : {backgroundColor: '#fff', padding: 10}
+                }
                 onPress={() => {
-                  setLanguage('vi-VN');
-                  let languageAuth = 'vi-VN';
+                  setLanguage('vi');
+                  let languageAuth = 'vi';
                   setLanguageAuth({languageAuth});
-                  props.navigation.navigate('Restart');
+                  props.navigation.navigate('Restart', {language: language});
                 }}>
-                <Text >{`${I18N.get('Viet', language)}`}</Text>
+                <Text>{`${I18N.get('Viet', language)}`}</Text>
               </Pressable>
               {/*<View pointerEvents={'none'}>*/}
               {/*  <Switch value={isDarkTheme} color={'red'} onPress={()=>{props.navigation.navigate('Home')}}/>*/}
               {/*</View>*/}
               <Pressable
-                  style={language=='en-US'?{backgroundColor:'#ff2b2b',marginTop:10}:{backgroundColor:'#fff',marginTop:10}}
+                style={
+                  language === 'en'
+                    ? {backgroundColor: '#ff2b2b', padding: 10}
+                    : {backgroundColor: '#fff', padding: 10}
+                }
                 onPress={() => {
-                  setLanguage('en-US');
-                  let languageAuth = 'en-US';
+                  setLanguage('en');
+                  let languageAuth = 'en';
                   setLanguageAuth({languageAuth});
-                  props.navigation.navigate('Restart');
+                  props.navigation.navigate('Restart', {language: language});
                 }}>
                 <Text>{`${I18N.get('Eng', language)}`}</Text>
               </Pressable>
@@ -206,24 +248,7 @@ export default function DrawerContent(props) {
             <Icon name="exit-to-app" color={color} size={size} />
           )}
           label={`${I18N.get('SignOut', language)}`}
-          onPress={() => {
-            setModalVisible(true);
-            setRefreshing(true);
-            RNFetchBlob.fetch('GET', `${path}/api/auth/logout/`, {
-              Authorization: user.access_token,
-            })
-              .then(() => {
-                setModalVisible(false);
-                setRefreshing(false);
-                console.log('logout success');
-                AsyncStorage.removeItem('AuthUser');
-                signOut();
-                // navigation.navigate('Login');
-              })
-              .catch((errorMessage, statusCode) => {
-                console.log(errorMessage, statusCode);
-              });
-          }}
+          onPress={createTwoButtonAlert}
         />
       </Drawer.Section>
       <Modal

@@ -17,9 +17,10 @@ import LoginScreen from './src/page/LoginScreen';
 import RegisterScreen from './src/page/RegisterScreen';
 import ForgotPasswordScreen from './src/page/ForgotPasswordScreen';
 export const AuthContext = React.createContext();
-export const path = 'http://cc080b6080cf.ngrok.io';
+export const path = 'http://3b61a2e42011.ngrok.io';
 // export const [language, setLanguage] = React.useState();
 const Stack = createStackNavigator();
+console.disableYellowBox = true;
 export default function App({navigation}) {
   const [state, dispatch] = React.useReducer(
     (prevState, action) => {

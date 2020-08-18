@@ -41,7 +41,7 @@ export default function LoginScreen({navigation}) {
   const {signIn} = React.useContext(AuthContext);
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [language, setLanguage] = useState('en-US');
+  const [language, setLanguage] = useState('en');
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [visible, setVisible] = React.useState(false);
@@ -75,7 +75,10 @@ export default function LoginScreen({navigation}) {
         if (access_token != undefined) {
           signIn({phone, password});
         } else {
-          Alert.alert('WARRING', 'phone number or password not true');
+          Alert.alert(
+            `${I18N.get('Warring', language)}`,
+            `${I18N.get('AlertLogin1', language)}`,
+          );
           setModalVisible(false);
           setRefreshing(false);
           setPassword(null);
@@ -88,10 +91,16 @@ export default function LoginScreen({navigation}) {
   };
   const checkLogin = () => {
     if (phone == null || phone == '') {
-      Alert.alert('WARRING', 'please enter your phone');
+      Alert.alert(
+        `${I18N.get('Warring', language)}`,
+        `${I18N.get('AlertLogin2', language)}`,
+      );
       setPassword(null);
     } else if (password == null || password.length < 6) {
-      Alert.alert('WARRING', 'please enter your password with length > 6');
+      Alert.alert(
+        `${I18N.get('Warring', language)}`,
+        `${I18N.get('AlertLogin3', language)}`,
+      );
       setPassword(null);
     } else {
       onSignIn();
@@ -104,7 +113,7 @@ export default function LoginScreen({navigation}) {
           console.log(null);
         }
         try {
-          setLanguage(JSON.parse(str));
+          setLanguage(JSON.parse(str) || 'en');
         } catch (error) {
           AsyncStorage.removeItem('Language');
           throw error;
@@ -135,16 +144,16 @@ export default function LoginScreen({navigation}) {
                 flexDirection: 'row',
               }}>
               <MenuTrigger
-                text={language == 'vi-VN' ? 'Tiếng Việt' : 'English'}
+                text={language == 'vi' ? 'Tiếng Việt' : 'English'}
                 customStyles={triggerStyles}
               />
               <Icon name={'down'} size={20} color={'#fff'} />
               <MenuOptions>
                 <MenuOption
-                  onSelect={() => setLanguage('vi-VN')}
+                  onSelect={() => setLanguage('vi')}
                   text="Vietnamese"
                 />
-                <MenuOption onSelect={() => setLanguage('en-US')}>
+                <MenuOption onSelect={() => setLanguage('en')}>
                   <Text style={{color: 'red'}}>English</Text>
                 </MenuOption>
               </MenuOptions>

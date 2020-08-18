@@ -17,19 +17,55 @@ export default {
   UploadImages: 'Đăng tải ảnh',
   SelectImages: 'Lựa chọn ảnh',
   NoImage: 'Không có hình ảnh nào',
+  AlertImage1:'Không có hình ảnh nào được chọn.',
+  AlertImage2:'Không thể giảm kích thước hình ảnh.',
+  AlertImage3:'Mời thử lại.',
   //Password
   OldPassword: 'Mật khẩu cũ',
   NewPassword: 'Mật khẩu mới',
   NewPasswordConfirm: 'Xác nhận mật khẩu mới',
+  AlertPassword1:'Kiểm tra mật khẩu cũ của bạn.',
+  AlertPassword2:'Mật khẩu mới phải khác mật khẩu cũ.',
+  AlertPassword3:'Cập nhật mật khẩu mới thành công.',
+  AlertPassword4:'Mật khẩu xác nhận chưa chính xác.',
+  AlertPassword5:'Mật khẩu mới phải có độ dài >=6.',
+  AlertPassword6:'Phải điền đầy đủ các trường.',
   //login
   Login: 'Đăng nhập',
   Register: 'Đăng kí',
   Password: 'Mật khẩu',
+  AlertLogin1:'Số điện thoại hoặc mật khẩu chưa đúng.',
+  AlertLogin2:'Bạn chưa nhập số điện thoại.',
+  AlertLogin3:'Mật khẩu phải có đội dài >= 6.',
   //register
   UserName:"Tên người dùng",
   PasswordConfirm:"Xác nhận mật khẩu",
   HaveAccount:"Bạn đã có tài khoản?",
+  AlertRegister1:'Bạn chưa nhập tên người dùng.',
+  AlertRegister2:'Bạn chưa nhập số điện thoại.',
+  AlertRegister3:'Mật khẩu phải có đội dài >= 6.',
+  AlertRegister4:'Mật khẩu xác nhận không đúng.',
+  AlertRegister5:'Số điện thoại này đã được đăng kí.',
+  AlertRegister6:'Số điện thoại không đúng định dạng.',
   //language
   Viet:'Tiếng Việt',
   Eng:'Tiếng Anh',
+  //list
+  Search:'Tìm kiếm',
+  Result:'kết quả tìm kiếm cho từ khóa',
+
+  Back:'Thoát',
+  Warring:'Cảnh báo',
+
+  AlertUpdate:'Bạn có muốn cập nhật ?',
+  AlertUpload:'Bạn có muốn tải những hình ảnh đã chọn lên ?',
+  AlertDelete:'Bạn có muốn xóa những hình ảnh đã chon ?',
+  AlertChangePassword:'Bạn có muốn thay đổi mật khẩu ?',
+  AlertLogout:'Bạn có muốn đăng xuất ?',
+
+  ChangeLanguage:'Đang thay đổi ngôn ngữ....',
+  Delete:'Xóa',
+
+  GalleryPick:'Chọn ảnh từ thư viện.',
+  CameraPick:'Chọn ảnh từ máy ảnh.',
 };

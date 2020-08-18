@@ -3,7 +3,8 @@ import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import {DrawerActions} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Entypo';
 import Modal from 'react-native-modal';
-export default function HeaderTab({navigation, NameTab}) {
+import I18N from "../store/i18n";
+export default function HeaderTab({navigation, NameTab,language}) {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <View>
@@ -65,7 +66,7 @@ export default function HeaderTab({navigation, NameTab}) {
               onPress={() => {
                 setModalVisible(!modalVisible);
               }}>
-              <Text style={styles.textStyle}>BACK</Text>
+              <Text style={styles.textStyle}> {`${I18N.get('Back', language)}`}</Text>
             </Pressable>
           </View>
         </View>

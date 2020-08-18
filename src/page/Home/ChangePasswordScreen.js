@@ -38,6 +38,22 @@ export default function ChangePasswordScreen({route, navigation}) {
   const {user} = route.params;
   const {data} = route.params;
   console.log(data);
+  const createTwoButtonAlert = () =>
+    Alert.alert(
+      `${I18N.get('Warring', language)}`,
+      `${I18N.get('AlertChangePassword', language)}`,
+      [
+        {
+          text: 'Cancel',
+          // onPress: () => {
+          //   setSelected({type: 'reset'});
+          // },
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => onUpdate()},
+      ],
+      {cancelable: false},
+    );
   const onUpdate = async () => {
     console.log('update', data_password_change);
     setRefreshing(true);
@@ -62,7 +78,24 @@ export default function ChangePasswordScreen({route, navigation}) {
           setOldPassword(null);
           setNewPassword(null);
           setConfirmNewPassword(null);
-          Alert.alert('WARRING', `${JSON.parse(res.data).message}`);
+          console.log(JSON.parse(res.data).message);
+          Alert.alert(
+            `${I18N.get('Warring', language)}`,
+            JSON.parse(res.data).message == 'Check your old password.'
+              ? `${I18N.get('AlertPassword1', language)}`
+              : JSON.parse(res.data).message == 'Password updated successfully.'
+              ? `${I18N.get('AlertPassword3', language)}`
+              : JSON.parse(res.data).message ==
+                'Please enter a password which is not similar then current password.'
+              ? `${I18N.get('AlertPassword2', language)}`
+              : JSON.parse(res.data).message ==
+                'The new password confirmation does not match.'
+              ? `${I18N.get('AlertPassword4', language)}`
+              : JSON.parse(res.data).message ==
+                'The new password must be at least 6 characters.'
+              ? `${I18N.get('AlertPassword5', language)}`
+              : `${I18N.get('AlertPassword6', language)}`,
+          );
         }
       })
       .catch((error) => console.log(error));
@@ -72,6 +105,7 @@ export default function ChangePasswordScreen({route, navigation}) {
       <HeaderTab
         navigation={navigation}
         NameTab={`${I18N.get('ChangePassword', language)}`}
+        language={language}
       />
       <KeyboardAvoidingView
         style={{justifyContent: 'center'}}
@@ -99,47 +133,49 @@ export default function ChangePasswordScreen({route, navigation}) {
               }}>
               {data.name}
             </Text>
-            <View>
-              <Text style={{fontWeight: 'bold'}}>{`${I18N.get(
-                'OldPassword',
-                language,
-              )}`}</Text>
-              <TextInput
-                secureTextEntry
-                placeholder={`${I18N.get('OldPassword', language)}`}
-                defaultValue={oldPassword}
-                placeholderTextColor={'#abae94'}
-                onChangeText={(text) => setOldPassword(text)}
-                style={styles.input}
-              />
-            </View>
-            <View>
-              <Text style={{fontWeight: 'bold'}}>{`${I18N.get(
-                'NewPassword',
-                language,
-              )}`}</Text>
-              <TextInput
-                secureTextEntry
-                placeholder={`${I18N.get('NewPassword', language)}`}
-                defaultValue={newPassword}
-                placeholderTextColor={'#abae94'}
-                onChangeText={(text) => setNewPassword(text)}
-                style={styles.input}
-              />
-            </View>
-            <View>
-              <Text style={{fontWeight: 'bold'}}>{`${I18N.get(
-                'NewPasswordConfirm',
-                language,
-              )}`}</Text>
-              <TextInput
-                secureTextEntry
-                placeholder={`${I18N.get('NewPasswordConfirm', language)}`}
-                defaultValue={confirmNewPassword}
-                placeholderTextColor={'#abae94'}
-                onChangeText={(text) => setConfirmNewPassword(text)}
-                style={styles.input}
-              />
+            <View style={{marginLeft: 10, marginRight: 10}}>
+              <View>
+                <Text style={{fontWeight: 'bold'}}>{`${I18N.get(
+                  'OldPassword',
+                  language,
+                )}`}</Text>
+                <TextInput
+                  secureTextEntry
+                  placeholder={`${I18N.get('OldPassword', language)}`}
+                  defaultValue={oldPassword}
+                  placeholderTextColor={'#abae94'}
+                  onChangeText={(text) => setOldPassword(text)}
+                  style={styles.input}
+                />
+              </View>
+              <View>
+                <Text style={{fontWeight: 'bold'}}>{`${I18N.get(
+                  'NewPassword',
+                  language,
+                )}`}</Text>
+                <TextInput
+                  secureTextEntry
+                  placeholder={`${I18N.get('NewPassword', language)}`}
+                  defaultValue={newPassword}
+                  placeholderTextColor={'#abae94'}
+                  onChangeText={(text) => setNewPassword(text)}
+                  style={styles.input}
+                />
+              </View>
+              <View>
+                <Text style={{fontWeight: 'bold'}}>{`${I18N.get(
+                  'NewPasswordConfirm',
+                  language,
+                )}`}</Text>
+                <TextInput
+                  secureTextEntry
+                  placeholder={`${I18N.get('NewPasswordConfirm', language)}`}
+                  defaultValue={confirmNewPassword}
+                  placeholderTextColor={'#abae94'}
+                  onChangeText={(text) => setConfirmNewPassword(text)}
+                  style={styles.input}
+                />
+              </View>
             </View>
             <Pressable
               style={{
@@ -148,7 +184,7 @@ export default function ChangePasswordScreen({route, navigation}) {
                 borderRadius: 15,
                 marginTop: 20,
               }}
-              onPress={() => onUpdate()}>
+              onPress={() => createTwoButtonAlert()}>
               <Text
                 style={{
                   margin: 10,

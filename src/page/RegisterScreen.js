@@ -15,10 +15,10 @@ import {
   RefreshControl,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import {setAuthUser} from '../shared/OnValueChange';
+import {setAuthUser, setLanguageAuth} from '../shared/OnValueChange';
 import {AuthContext, path} from '../../App';
 import Modal from 'react-native-modal';
-import I18N from "../store/i18n";
+import I18N from '../store/i18n';
 const {width, height} = Dimensions.get('window');
 const wait = (timeout) => {
   return new Promise((resolve) => {
@@ -58,28 +58,54 @@ export default function RegisterScreen({navigation, route}) {
       .then((res) => {
         let access_token = JSON.parse(res.text()).access_token;
         setAuthUser({access_token, phone, password});
+        let languageAuth = language;
+        setLanguageAuth({languageAuth});
         if (access_token != undefined) {
           signUp({phone, password});
         } else {
           setModalVisible(false);
           setRefreshing(false);
           console.log(JSON.parse(res.text()).error);
-          Alert.alert('WARRING', `${JSON.parse(res.text()).error.phone[0]}`);
-          setPassword(null);
-          setConfirmPassword(null);
+          if (
+            JSON.parse(res.text()).error.phone[0] ===
+            'The phone has already been taken.'
+          ) {
+            Alert.alert(
+              `${I18N.get('Warring', language)}`,
+              `${I18N.get('AlertRegister5', language)}`,
+            );
+          }
+          else {
+            Alert.alert(
+                `${I18N.get('Warring', language)}`,
+                `${I18N.get('AlertRegister6', language)}`,
+            );
+          }
         }
       })
       .catch((error) => console.log(error));
   };
   const checkRegister = () => {
     if (username == null) {
-      Alert.alert('WARRING', 'please enter username');
+      Alert.alert(
+        `${I18N.get('Warring', language)}`,
+        `${I18N.get('AlertRegister1', language)}`,
+      );
     } else if (phone == null) {
-      Alert.alert('WARRING', 'please enter your phone');
+      Alert.alert(
+        `${I18N.get('Warring', language)}`,
+        `${I18N.get('AlertRegister2', language)}`,
+      );
     } else if (password == null || password.length < 6) {
-      Alert.alert('WARRING', 'please enter your password with length > 6');
+      Alert.alert(
+        `${I18N.get('Warring', language)}`,
+        `${I18N.get('AlertRegister3', language)}`,
+      );
     } else if (password != confirmPassword) {
-      Alert.alert('WARRING', 'your confirm password is not correct');
+      Alert.alert(
+        `${I18N.get('Warring', language)}`,
+        `${I18N.get('AlertRegister4', language)}`,
+      );
     } else {
       onSignUp();
     }
@@ -100,10 +126,7 @@ export default function RegisterScreen({navigation, route}) {
             {/*<Text style={styles.logo}>Register</Text>*/}
             <View style={styles.inputView}>
               <TextInput
-                placeholder={`${I18N.get(
-                    'UserName',
-                    language,
-                )}`}
+                placeholder={`${I18N.get('UserName', language)}`}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
                 autoFocus={true}
@@ -114,10 +137,7 @@ export default function RegisterScreen({navigation, route}) {
             <View style={styles.inputView}>
               <TextInput
                 ref={ref_input1}
-                placeholder={`${I18N.get(
-                    'PhoneNumber',
-                    language,
-                )}`}
+                placeholder={`${I18N.get('PhoneNumber', language)}`}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
                 onChangeText={(text) => setPhone(text)}
@@ -128,10 +148,7 @@ export default function RegisterScreen({navigation, route}) {
               <TextInput
                 ref={ref_input2}
                 secureTextEntry
-                placeholder={`${I18N.get(
-                    'Password',
-                    language,
-                )}`}
+                placeholder={`${I18N.get('Password', language)}`}
                 defaultValue={password}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
@@ -143,10 +160,7 @@ export default function RegisterScreen({navigation, route}) {
               <TextInput
                 secureTextEntry
                 ref={ref_input3}
-                placeholder={`${I18N.get(
-                    'PasswordConfirm',
-                    language,
-                )}`}
+                placeholder={`${I18N.get('PasswordConfirm', language)}`}
                 defaultValue={confirmPassword}
                 placeholderTextColor={'#abae94'}
                 style={styles.inputText}
@@ -157,25 +171,19 @@ export default function RegisterScreen({navigation, route}) {
               style={styles.loginButton}
               onPress={() => checkRegister()}>
               <Text style={styles.loginText}>{`${I18N.get(
-                  'Register',
-                  language,
+                'Register',
+                language,
               )}`}</Text>
             </Pressable>
             <Pressable
               style={styles.forgot}
               onPress={() => navigation.goBack()}>
               <Text style={styles.forgot}>
-                {`${I18N.get(
-                    'HaveAccount',
-                    language,
-                )}`}
+                {`${I18N.get('HaveAccount', language)}`}
                 {
                   <Text style={{fontWeight: 'bold', fontSize: 14}}>
                     {' '}
-                    {`${I18N.get(
-                        'Login',
-                        language,
-                    )}`}{' '}
+                    {`${I18N.get('Login', language)}`}{' '}
                   </Text>
                 }
               </Text>
