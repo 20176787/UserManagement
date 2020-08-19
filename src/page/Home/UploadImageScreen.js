@@ -12,7 +12,7 @@ import {
   KeyboardAvoidingView,
   Alert,
   Modal,
-  RefreshControl,
+  RefreshControl, ActivityIndicator,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob/index';
 import ImagePicker from 'react-native-image-crop-picker/index';
@@ -20,6 +20,7 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import HeaderTab from '../../shared/HeaderTab';
+import ReactNativeModal from "react-native-modal";
 import {path} from '../../../App';
 import ImageResizer from 'react-native-image-resizer';
 import ImageViewer from 'react-native-image-zoom-viewer';
@@ -37,6 +38,7 @@ export default function UploadImageScreen({route, navigation}) {
   const {language} = route.params;
   const [resizeImageUri, setResizedImageUri] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisibleUpload, setModalVisibleUpload] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
@@ -87,7 +89,7 @@ export default function UploadImageScreen({route, navigation}) {
     });
   }, []);
   const onUploadImage = async () => {
-    setRefreshing(true);
+    setModalVisibleUpload(true);
     imgs[0] != undefined
       ? RNFetchBlob.fetch(
           'POST',
@@ -104,7 +106,7 @@ export default function UploadImageScreen({route, navigation}) {
           .then((res) => {
             console.log('success upLoad');
             cleanupImages();
-            setRefreshing(false);
+            setModalVisibleUpload(false);
             imgs.map((i) => setImgs({type: 'remove', value: i}));
             datas.map((i) => setDatas({type: 'remove', value: i.id}));
             navigation.navigate('Images');
@@ -313,6 +315,9 @@ export default function UploadImageScreen({route, navigation}) {
           enableSwipeDown={true}
         />
       </Modal>
+      <ReactNativeModal isVisible={modalVisibleUpload}>
+        <ActivityIndicator size="large" color="red" />
+      </ReactNativeModal>
     </SafeAreaView>
   );
 }

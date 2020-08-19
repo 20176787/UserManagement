@@ -13,7 +13,8 @@ import {
   Image,
   Alert,
   RefreshControl,
-  ScrollView, ActivityIndicator,
+  ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import {setAuthUser, setLanguageAuth} from '../shared/OnValueChange';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -86,7 +87,7 @@ export default function LoginScreen({navigation}) {
       })
       .catch((err) => {
         console.log(err);
-        Alert.alert('ERROR','Can not connect to serve.')
+        Alert.alert('ERROR', 'Can not connect to serve.');
         setModalVisible(false);
       });
   };
@@ -130,8 +131,7 @@ export default function LoginScreen({navigation}) {
         source={require('../store/img/avatar.png')}>
         <KeyboardAvoidingView
           style={{flex: 1, justifyContent: 'center'}}
-          behavior="padding"
-        >
+          behavior="padding">
           <MenuProvider>
             <Menu
               style={{
@@ -149,11 +149,14 @@ export default function LoginScreen({navigation}) {
               <Icon name={'down'} size={20} color={'#fff'} />
               <MenuOptions>
                 <MenuOption
+                  style={language == 'vi' ? {backgroundColor: 'red'} : null}
                   onSelect={() => setLanguage('vi')}
-                  text="Vietnamese"
+                  text={`${I18N.get('Viet', language)}`}
                 />
-                <MenuOption onSelect={() => setLanguage('en')}>
-                  <Text style={{color: 'red'}}>English</Text>
+                <MenuOption
+                  onSelect={() => setLanguage('en')}
+                  style={language == 'en' ? {backgroundColor: 'red'} : null}>
+                  <Text style={{}}>{`${I18N.get('Eng', language)}`}</Text>
                 </MenuOption>
               </MenuOptions>
             </Menu>

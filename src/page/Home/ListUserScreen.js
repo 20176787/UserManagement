@@ -58,7 +58,7 @@ export default function ListUserScreen({route, navigation}) {
       }
     };
     getData();
-    // navigation.addListener('focus', () => getData());
+    navigation.addListener('focus', () => getData());
   }, []);
   const searchFilterFunction = (text) => {
     const newData = dataSearch.filter((item) => {

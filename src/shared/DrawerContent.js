@@ -210,8 +210,8 @@ export default function DrawerContent(props) {
               <Pressable
                 style={
                   language === 'vi'
-                    ? {backgroundColor: '#ff2b2b', padding: 10}
-                    : {backgroundColor: '#fff', padding: 10}
+                    ? {backgroundColor: '#ff2b2b', paddingTop: 10,paddingBottom:10}
+                    : {backgroundColor: '#fff', paddingTop: 10,paddingBottom:10}
                 }
                 onPress={() => {
                   setLanguage('vi');
@@ -227,8 +227,8 @@ export default function DrawerContent(props) {
               <Pressable
                 style={
                   language === 'en'
-                    ? {backgroundColor: '#ff2b2b', padding: 10}
-                    : {backgroundColor: '#fff', padding: 10}
+                    ? {backgroundColor: '#ff2b2b',  paddingTop: 10,paddingBottom:10}
+                    : {backgroundColor: '#fff',  paddingTop: 10,paddingBottom:10}
                 }
                 onPress={() => {
                   setLanguage('en');

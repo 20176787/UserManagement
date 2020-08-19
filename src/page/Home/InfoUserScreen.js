@@ -20,8 +20,9 @@ import {path} from '../../../App';
 import HeaderTab from '../../shared/HeaderTab';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import HeaderUploadImageTab from "../../shared/HeaderUploadImageTab";
-import I18N from "../../store/i18n";
+import HeaderUploadImageTab from '../../shared/HeaderUploadImageTab';
+import I18N from '../../store/i18n';
+import moment from 'moment';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -31,6 +32,7 @@ export default function InfoUserScreen({navigation, route}) {
   const {user} = route.params;
   const {language} = route.params;
   const {data} = route.params;
+  moment.locale(`${language}`);
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
@@ -52,7 +54,10 @@ export default function InfoUserScreen({navigation, route}) {
 
   return (
     <SafeAreaView style={{height: '100%'}}>
-      <HeaderUploadImageTab navigation={navigation} NameTab={'INFORMATION'} />
+      <HeaderUploadImageTab
+        navigation={navigation}
+        NameTab={`${I18N.get('Information', language)}`}
+      />
       <View style={{alignItems: 'center'}}>
         <Pressable
           onPress={() => {
@@ -74,7 +79,11 @@ export default function InfoUserScreen({navigation, route}) {
       <ScrollView
         contentContainerStyle={styles.scrollView}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh}  colors={["red"]} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['red']}
+          />
         }>
         <View style={styles.container}>
           <View
@@ -93,40 +102,42 @@ export default function InfoUserScreen({navigation, route}) {
                 marginBottom: 10,
               }}>
               <Text style={styles.textLabel}>{`${I18N.get(
-                  'Name',
-                  language,
+                'Name',
+                language,
               )}`}</Text>
               <Text style={styles.textDetail}>{data.name}</Text>
             </View>
             {drawLine()}
             <View style={styles.textForm}>
               <Text style={styles.textLabel}>{`${I18N.get(
-                  'Email',
-                  language,
+                'Email',
+                language,
               )}`}</Text>
               <Text style={styles.textDetail}>{data.email}</Text>
             </View>
             {drawLine()}
             <View style={styles.textForm}>
               <Text style={styles.textLabel}>{`${I18N.get(
-                  'PhoneNumber',
-                  language,
+                'PhoneNumber',
+                language,
               )}`}</Text>
               <Text style={styles.textDetail}>{data.phone}</Text>
             </View>
             {drawLine()}
             <View style={styles.textForm}>
               <Text style={styles.textLabel}>{`${I18N.get(
-                  'Birth',
-                  language,
+                'Birth',
+                language,
               )}`}</Text>
-              <Text style={styles.textDetail}>{data.birth}</Text>
+              <Text style={styles.textDetail}>
+                {moment(data.birth).format('L')}
+              </Text>
             </View>
             {drawLine()}
             <View style={styles.textForm}>
               <Text style={styles.textLabel}>{`${I18N.get(
-                  'Address',
-                  language,
+                'Address',
+                language,
               )}`}</Text>
               <Text style={styles.textDetail}>{data.address}</Text>
             </View>

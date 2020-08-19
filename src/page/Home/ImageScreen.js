@@ -27,7 +27,6 @@ const wait = (timeout) => {
   });
 };
 export default function ImageScreen({route, navigation}) {
-  moment.locale('vi');
   const {user} = route.params;
   const {data} = route.params;
   const {language} = route.params;

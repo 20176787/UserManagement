@@ -9,7 +9,7 @@ export default {
   Name: 'Name',
   PhoneNumber: 'Phone Number',
   Email: 'Email',
-  Birth: 'Date Of Birth',
+  Birth: 'Birthday',
   Address: 'Address',
   Update: 'UPDATE',
   ChangeAvatar:'Change Avatar',

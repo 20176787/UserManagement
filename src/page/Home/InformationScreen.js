@@ -44,7 +44,7 @@ export default function InformationScreen({navigation, route}) {
   const {width, height} = Dimensions.get('window');
   const [name, setName] = useState();
   const [address, setAddress] = useState();
-  const [birth, setBirth] = useState();
+  const [birth, setBirth] = useState(null);
   const [email, setEmail] = useState();
   const [avtUri, setAvtUri] = useState();
   const [avatar_url, setAvatar_url] = useState();
@@ -194,10 +194,10 @@ export default function InformationScreen({navigation, route}) {
       });
   };
   const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
+    const currentDate = selectedDate || birth || date;
     setShow(Platform.OS === 'ios');
     setBirth(currentDate);
-    console.log(moment(date).format('L'));
+    console.log(moment(currentDate).format('L'));
   };
 
   const showMode = (currentMode) => {
@@ -222,7 +222,7 @@ export default function InformationScreen({navigation, route}) {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={["red"]}
+              colors={['red']}
             />
           }>
           <View style={{padding: 10}}>
@@ -333,8 +333,16 @@ export default function InformationScreen({navigation, route}) {
                             (styles.input,
                             {paddingTop: 15, paddingBottom: 15, paddingLeft: 2})
                           }>
-                          {moment(birth).format('L') ||
-                            moment(data.birth).format('L')}
+                          {birth != null ? (
+                            moment(birth).format('L')
+                          ) : (
+                            <View>
+                              <Text style={{color:'#abae94'}}>{`${I18N.get(
+                                'Birth',
+                                language,
+                              )}`}</Text>
+                            </View>
+                          )}
                         </Text>
                         <Icon
                           name={'calendar'}
@@ -348,7 +356,7 @@ export default function InformationScreen({navigation, route}) {
                   {show && (
                     <DateTimePicker
                       testID="dateTimePicker"
-                      value={date}
+                      value={birth != null ? new Date(Date.parse(birth)) : date}
                       mode={mode}
                       is24Hour={true}
                       display="default"
