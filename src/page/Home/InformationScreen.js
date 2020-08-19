@@ -7,6 +7,7 @@ import {
   ImageBackground,
   Image,
   Dimensions,
+  Platform,
   SafeAreaView,
   StyleSheet,
   KeyboardAvoidingView,
@@ -14,6 +15,7 @@ import {
   Alert,
   Modal as Model1,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -29,6 +31,7 @@ import 'moment/locale/vi';
 import ImagePicker from 'react-native-image-crop-picker/index';
 import ViewAvatar from '../../shared/ViewAvatar';
 import I18N from '../../store/i18n';
+
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -47,6 +50,7 @@ export default function InformationScreen({navigation, route}) {
   const [avatar_url, setAvatar_url] = useState();
   const [modalVisible, setModalVisible] = useState(false);
   const [modalVisibleAvatar, setModalVisibleAvatar] = useState(false);
+  const [modalVisibleUpdate, setModalVisibleUpdate] = useState(false);
   const [date, setDate] = useState(new Date(1598051730000));
   const [mode, setMode] = useState('date');
   const [show, setShow] = useState(false);
@@ -91,6 +95,7 @@ export default function InformationScreen({navigation, route}) {
             .then((res) => {
               console.log('hello world', res.data);
               setData(JSON.parse(res.data));
+              setBirth(JSON.parse(res.data).birth);
               setRefreshing(false);
             })
             .catch((error) => console.log(error));
@@ -157,13 +162,15 @@ export default function InformationScreen({navigation, route}) {
         alert(e);
       });
   };
+
   function baseName(str) {
     var base = new String(str).substring(str.lastIndexOf('/') + 1);
     return base;
   }
+
   const onUpdate = async () => {
     console.log('update', useData);
-    setRefreshing(true);
+    setModalVisibleUpdate(true);
     if (avtUri != null) {
       await onUploadImage();
     }
@@ -178,9 +185,13 @@ export default function InformationScreen({navigation, route}) {
     )
       .then((res) => {
         console.log('success update');
-        setRefreshing(false);
+        setModalVisibleUpdate(false);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        Alert.alert('ERROR', 'Can not connect to serve.');
+        setModalVisibleUpdate(false);
+      });
   };
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -208,10 +219,15 @@ export default function InformationScreen({navigation, route}) {
         behavior={Platform.OS == 'ios' ? 'padding' : 'padding'}>
         <ScrollView
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["red"]}
+            />
           }>
           <View style={{padding: 10}}>
             <Pressable
+              style={styles.boxAvatar}
               onPress={() => {
                 setModalVisibleAvatar(true);
               }}
@@ -227,37 +243,33 @@ export default function InformationScreen({navigation, route}) {
                 }
               />
             </Pressable>
-            {/*<View style={{}}>*/}
-            {/*<Icon1*/}
-            {/*    name={'add-a-photo'}*/}
-            {/*    size={30}*/}
-            {/*    color={'red'}*/}
-            {/*    style={{*/}
-            {/*      padding: 10,*/}
-            {/*      marginRight: 10,*/}
-            {/*      position: 'absolute',*/}
-            {/*      alignSelf: 'center',*/}
-            {/*      paddingTop: '35%',*/}
-            {/*      paddingLeft: '35%',*/}
-            {/*    }}*/}
-            {/*/>*/}
-            {/*</View>*/}
             <Pressable
+              style={{
+                position: 'absolute',
+                borderRadius: 25,
+                width: 50,
+                height: 50,
+                backgroundColor: '#fff',
+                marginTop: 125,
+                marginLeft: 230,
+              }}
               onPress={() => {
                 setModalVisible(true);
               }}>
-              <Text
+              <Icon1
+                name={'add-a-photo'}
+                size={35}
+                color={'red'}
                 style={{
-                  fontSize: 20,
-                  fontWeight: 'bold',
-                  color: 'red',
+                  // padding: 10,
+                  // marginRight: 10,
+                  // position: 'absolute',
+                  marginTop: 5,
                   alignSelf: 'center',
-                  padding: 20,
-                }}>
-                {`${I18N.get('ChangeAvatar', language)}`}
-              </Text>
+                }}
+              />
             </Pressable>
-            <View style={{marginLeft: 10, marginRight: 10}}>
+            <View style={{marginLeft: 10, marginRight: 10, paddingTop: 20}}>
               <View>
                 <Text style={styles.textLabel}>{`${I18N.get(
                   'Name',
@@ -460,6 +472,9 @@ export default function InformationScreen({navigation, route}) {
           style={{zIndex: -1}}
         />
       </Model1>
+      <Modal isVisible={modalVisibleUpdate}>
+        <ActivityIndicator size="large" color="red" />
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -481,10 +496,17 @@ const styles = StyleSheet.create({
     borderColor: '#ff2929',
     overflow: 'hidden',
     // marginTop: '20%',
-    borderWidth: 5,
+    borderWidth: 2,
     marginBottom: 20,
-    zIndex:-1,
+    zIndex: -1,
     alignSelf: 'center',
+  },
+  boxAvatar: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    alignSelf: 'center',
+    zIndex: -1,
   },
   modalView: {
     margin: 20,

@@ -74,7 +74,7 @@ export default function InfoUserScreen({navigation, route}) {
       <ScrollView
         contentContainerStyle={styles.scrollView}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh}  colors={["red"]} />
         }>
         <View style={styles.container}>
           <View

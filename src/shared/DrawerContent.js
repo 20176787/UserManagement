@@ -5,7 +5,7 @@ import {
   ScrollView,
   RefreshControl,
   Pressable,
-  Alert,
+  Alert, ActivityIndicator, SafeAreaView,
 } from 'react-native';
 import {
   Avatar,
@@ -251,14 +251,8 @@ export default function DrawerContent(props) {
           onPress={createTwoButtonAlert}
         />
       </Drawer.Section>
-      <Modal
-        isVisible={modalVisible}
-        onBackdropPress={() => setModalVisible(false)}>
-        <ScrollView
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        />
+      <Modal isVisible={modalVisible}>
+        <ActivityIndicator size="large" color="red" />
       </Modal>
     </View>
   );

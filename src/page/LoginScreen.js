@@ -13,12 +13,11 @@ import {
   Image,
   Alert,
   RefreshControl,
-  ScrollView,
+  ScrollView, ActivityIndicator,
 } from 'react-native';
 import {setAuthUser, setLanguageAuth} from '../shared/OnValueChange';
 import RNFetchBlob from 'rn-fetch-blob';
 import {AuthContext, path} from '../../App';
-import {set} from 'react-native-reanimated';
 import Modal from 'react-native-modal';
 import I18N from '../store/i18n';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -87,6 +86,8 @@ export default function LoginScreen({navigation}) {
       })
       .catch((err) => {
         console.log(err);
+        Alert.alert('ERROR','Can not connect to serve.')
+        setModalVisible(false);
       });
   };
   const checkLogin = () => {
@@ -130,9 +131,7 @@ export default function LoginScreen({navigation}) {
         <KeyboardAvoidingView
           style={{flex: 1, justifyContent: 'center'}}
           behavior="padding"
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }>
+        >
           <MenuProvider>
             <Menu
               style={{
@@ -214,14 +213,8 @@ export default function LoginScreen({navigation}) {
           </MenuProvider>
         </KeyboardAvoidingView>
       </ImageBackground>
-      <Modal
-        isVisible={modalVisible}
-        onBackdropPress={() => setModalVisible(false)}>
-        <ScrollView
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        />
+      <Modal isVisible={modalVisible}>
+        <ActivityIndicator size="large" color="red" />
       </Modal>
     </SafeAreaView>
   );

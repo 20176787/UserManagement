@@ -10,12 +10,13 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
-  RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import HeaderTab from '../../shared/HeaderTab';
 import {path} from '../../../App';
 import I18N from '../../store/i18n';
+import Modal from 'react-native-modal';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -25,6 +26,7 @@ export default function ChangePasswordScreen({route, navigation}) {
   const [oldPassword, setOldPassword] = useState();
   const {language} = route.params;
   const [newPassword, setNewPassword] = useState();
+  const [modalVisible, setModalVisible] = useState(false);
   const [confirmNewPassword, setConfirmNewPassword] = useState();
   const data_password_change = {
     old_password: oldPassword,
@@ -57,6 +59,7 @@ export default function ChangePasswordScreen({route, navigation}) {
   const onUpdate = async () => {
     console.log('update', data_password_change);
     setRefreshing(true);
+    setModalVisible(true);
     await RNFetchBlob.fetch(
       'POST',
       `${path}/api/auth/change_password`,
@@ -68,6 +71,7 @@ export default function ChangePasswordScreen({route, navigation}) {
     )
       .then((res) => {
         setRefreshing(false);
+        setModalVisible(false);
         console.log(JSON.parse(res.data).message);
         if (JSON.parse(res.data).message === 'Password updated successfully.') {
           setOldPassword(null);
@@ -111,9 +115,10 @@ export default function ChangePasswordScreen({route, navigation}) {
         style={{justifyContent: 'center'}}
         behavior="padding">
         <ScrollView
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }>
+        // refreshControl={
+        //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        // }
+        >
           <View style={{padding: 10}}>
             <Image
               style={styles.imageAvatar}
@@ -198,6 +203,9 @@ export default function ChangePasswordScreen({route, navigation}) {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <Modal isVisible={modalVisible}>
+        <ActivityIndicator size="large" color="red" />
+      </Modal>
     </SafeAreaView>
   );
 }

@@ -224,7 +224,7 @@ export default function UploadImageScreen({route, navigation}) {
             data={imgs}
             style={{height: '45%', margin: 10}}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh}  colors={["red"]} />
             }
             numColumns={1}
             renderItem={({item, index}) => (

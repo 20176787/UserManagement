@@ -24,7 +24,7 @@ export default function RestartScreen({navigation,route}) {
   return (
     <ScrollView
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh}  colors={["red"]}/>
       }>
       <Text style={{paddingTop:'70%',alignSelf:'center'}}>{`${I18N.get('ChangeLanguage', language)}`}</Text>
     </ScrollView>

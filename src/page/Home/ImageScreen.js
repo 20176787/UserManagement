@@ -188,7 +188,7 @@ export default function ImageScreen({route, navigation}) {
         style={{height: '81%', margin: 10}}
         data={dataImg}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh}  colors={["red"]} />
         }
         numColumns={1}
         renderItem={({item, index}) => {

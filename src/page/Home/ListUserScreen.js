@@ -19,6 +19,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {path} from '../../../App';
 import I18N from '../../store/i18n';
 import {DrawerActions} from '@react-navigation/native';
+import Modal from 'react-native-modal';
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -33,7 +34,7 @@ export default function ListUserScreen({route, navigation}) {
   const [items, setItems] = useState(data || []);
   const [dataSearch, setDataSearch] = useState(data);
   const onRefresh = useCallback(() => {
-    wait(3000).then(() => setRefreshing(false));
+    wait(2000).then(() => setRefreshing(false));
   }, []);
   useEffect(() => {
     const getData = () => {
@@ -95,6 +96,7 @@ export default function ListUserScreen({route, navigation}) {
             // marginTop: 10,
             // marginBottom: 10,
             // marginLeft: 10,
+            padding: 5,
             alignSelf: 'center',
           }}
           value={search}
@@ -121,7 +123,11 @@ export default function ListUserScreen({route, navigation}) {
             data={items}
             keyExtractor={(item, key) => item.phone}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['red']}
+              />
             }
             renderItem={({item}) => (
               <Pressable
@@ -192,12 +198,7 @@ export default function ListUserScreen({route, navigation}) {
               alignItems: 'center',
               paddingTop: 20,
             }}>
-            <ActivityIndicator />
-            <ScrollView
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              }
-            />
+            <ActivityIndicator size="large" color="red" />
           </View>
         )}
       </View>

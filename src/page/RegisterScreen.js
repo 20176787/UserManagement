@@ -13,6 +13,7 @@ import {
   Alert,
   ScrollView,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {setAuthUser, setLanguageAuth} from '../shared/OnValueChange';
@@ -74,16 +75,19 @@ export default function RegisterScreen({navigation, route}) {
               `${I18N.get('Warring', language)}`,
               `${I18N.get('AlertRegister5', language)}`,
             );
-          }
-          else {
+          } else {
             Alert.alert(
-                `${I18N.get('Warring', language)}`,
-                `${I18N.get('AlertRegister6', language)}`,
+              `${I18N.get('Warring', language)}`,
+              `${I18N.get('AlertRegister6', language)}`,
             );
           }
         }
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        Alert.alert('ERROR', 'Can not connect to serve.');
+        setModalVisible(false);
+      });
   };
   const checkRegister = () => {
     if (username == null) {
@@ -191,14 +195,8 @@ export default function RegisterScreen({navigation, route}) {
           </View>
         </KeyboardAvoidingView>
       </ImageBackground>
-      <Modal
-        isVisible={modalVisible}
-        onBackdropPress={() => setModalVisible(false)}>
-        <ScrollView
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        />
+      <Modal isVisible={modalVisible}>
+        <ActivityIndicator size="large" color="#red" />
       </Modal>
     </SafeAreaView>
   );
