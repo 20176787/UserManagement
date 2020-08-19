@@ -25,7 +25,7 @@ import Modal from 'react-native-modal';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Icon1 from 'react-native-vector-icons/MaterialIcons';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import DateTimePicker from '@react-native-community/datetimepicker';
+// import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
 import 'moment/locale/vi';
 import ImagePicker from 'react-native-image-crop-picker/index';
@@ -353,16 +353,16 @@ export default function InformationScreen({navigation, route}) {
                       </View>
                     </View>
                   </Pressable>
-                  {show && (
-                    <DateTimePicker
-                      testID="dateTimePicker"
-                      value={birth != null ? new Date(Date.parse(birth)) : date}
-                      mode={mode}
-                      is24Hour={true}
-                      display="default"
-                      onChange={onChange}
-                    />
-                  )}
+                  {/*{show && (*/}
+                  {/*  <DateTimePicker*/}
+                  {/*    testID="dateTimePicker"*/}
+                  {/*    value={birth != null ? new Date(Date.parse(birth)) : date}*/}
+                  {/*    mode={mode}*/}
+                  {/*    is24Hour={true}*/}
+                  {/*    display="default"*/}
+                  {/*    onChange={onChange}*/}
+                  {/*  />*/}
+                  {/*)}*/}
                 </View>
               </View>
               <View>
