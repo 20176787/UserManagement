@@ -5,7 +5,9 @@ import {
   ScrollView,
   RefreshControl,
   Pressable,
-  Alert, ActivityIndicator, SafeAreaView,
+  Alert,
+  ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
 import {
   Avatar,
@@ -60,13 +62,11 @@ export default function DrawerContent(props) {
     );
   const onLogout = () => {
     setModalVisible(true);
-    setRefreshing(true);
     RNFetchBlob.fetch('GET', `${path}/api/auth/logout/`, {
       Authorization: user.access_token,
     })
       .then(() => {
         setModalVisible(false);
-        setRefreshing(false);
         console.log('logout success');
         AsyncStorage.removeItem('AuthUser');
         signOut();
@@ -210,8 +210,16 @@ export default function DrawerContent(props) {
               <Pressable
                 style={
                   language === 'vi'
-                    ? {backgroundColor: '#ff2b2b', paddingTop: 10,paddingBottom:10}
-                    : {backgroundColor: '#fff', paddingTop: 10,paddingBottom:10}
+                    ? {
+                        backgroundColor: '#ff2b2b',
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                      }
+                    : {
+                        backgroundColor: '#fff',
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                      }
                 }
                 onPress={() => {
                   setLanguage('vi');
@@ -227,8 +235,16 @@ export default function DrawerContent(props) {
               <Pressable
                 style={
                   language === 'en'
-                    ? {backgroundColor: '#ff2b2b',  paddingTop: 10,paddingBottom:10}
-                    : {backgroundColor: '#fff',  paddingTop: 10,paddingBottom:10}
+                    ? {
+                        backgroundColor: '#ff2b2b',
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                      }
+                    : {
+                        backgroundColor: '#fff',
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                      }
                 }
                 onPress={() => {
                   setLanguage('en');
